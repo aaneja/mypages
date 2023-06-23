@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8" />
+    <!-- Make sure to load the highlight.js CSS file before the Diff2Html CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css" />
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css"
+    />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+</head>
+<script>
+    const diffString = `diff -U 1000000 /tmp/diff8109030762416172502/withDynamicFiltering/q31.txt /tmp/diff8109030762416172502/withNoDynamicFiltering/q31.txt
+--- /tmp/diff8109030762416172502/withDynamicFiltering/q31.txt	2023-06-23 09:54:16.673112161 +0530
++++ /tmp/diff8109030762416172502/withNoDynamicFiltering/q31.txt	2023-06-23 09:54:16.773116511 +0530
+@@ -1,35 +1,35 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(store_sales)
+     │    │    │    │    └── Scan(date_dim)
+     │    │    │    └── Scan(customer_address)
+     │    │    └── InnerJoin[REPLICATED] :
+     │    │         ├── InnerJoin[REPLICATED] :
+-    │    │         │    ├── Scan(web_sales)
++    │    │         │    ├── Scan(store_sales)
+     │    │         │    └── Scan(date_dim)
+     │    │         └── Scan(customer_address)
+     │    └── InnerJoin[PARTITIONED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── InnerJoin[REPLICATED] :
+-    │         │    │    ├── Scan(store_sales)
++    │         │    │    ├── Scan(web_sales)
+     │         │    │    └── Scan(date_dim)
+     │         │    └── Scan(customer_address)
+     │         └── InnerJoin[REPLICATED] :
+     │              ├── InnerJoin[REPLICATED] :
+     │              │    ├── Scan(web_sales)
+     │              │    └── Scan(date_dim)
+     │              └── Scan(customer_address)
+     └── InnerJoin[PARTITIONED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+          │    │    └── Scan(date_dim)
+          │    └── Scan(customer_address)
+          └── InnerJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(web_sales)
+               │    └── Scan(date_dim)
+               └── Scan(customer_address)
+diff -U 1000000 /tmp/diff8109030762416172502/withDynamicFiltering/q83.txt /tmp/diff8109030762416172502/withNoDynamicFiltering/q83.txt
+--- /tmp/diff8109030762416172502/withDynamicFiltering/q83.txt	2023-06-23 09:54:16.629110246 +0530
++++ /tmp/diff8109030762416172502/withNoDynamicFiltering/q83.txt	2023-06-23 09:54:16.745115293 +0530
+@@ -1,29 +1,29 @@
+ InnerJoin[PARTITIONED] :
+     ├── SemiJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(store_returns)
++    │    │    │    ├── Scan(catalog_returns)
+     │    │    │    └── Scan(date_dim)
+     │    │    └── Scan(item)
+     │    └── SemiJoin[REPLICATED] :
+     │         ├── Scan(date_dim)
+     │         └── Scan(date_dim)
+     └── InnerJoin[PARTITIONED] :
+          ├── SemiJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(catalog_returns)
++         │    │    │    ├── Scan(store_returns)
+          │    │    │    └── Scan(date_dim)
+          │    │    └── Scan(item)
+          │    └── SemiJoin[REPLICATED] :
+          │         ├── Scan(date_dim)
+          │         └── Scan(date_dim)
+          └── SemiJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── InnerJoin[REPLICATED] :
+               │    │    ├── Scan(web_returns)
+               │    │    └── Scan(date_dim)
+               │    └── Scan(item)
+               └── SemiJoin[REPLICATED] :
+                    ├── Scan(date_dim)
+                    └── Scan(date_dim)
+diff -U 1000000 /tmp/diff8109030762416172502/withDynamicFiltering/q91.txt /tmp/diff8109030762416172502/withNoDynamicFiltering/q91.txt
+--- /tmp/diff8109030762416172502/withDynamicFiltering/q91.txt	2023-06-23 09:54:16.717114075 +0530
++++ /tmp/diff8109030762416172502/withNoDynamicFiltering/q91.txt	2023-06-23 09:54:16.813118252 +0530
+@@ -1,13 +1,13 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(catalog_returns)
+-    │    │    └── Scan(date_dim)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(customer_address)
+-    │         └── InnerJoin[REPLICATED] :
+-    │              ├── InnerJoin[REPLICATED] :
+-    │              │    ├── Scan(customer)
+-    │              │    └── Scan(customer_demographics)
+-    │              └── Scan(household_demographics)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(customer_address)
++    │    │         └── InnerJoin[REPLICATED] :
++    │    │              ├── InnerJoin[REPLICATED] :
++    │    │              │    ├── Scan(customer)
++    │    │              │    └── Scan(customer_demographics)
++    │    │              └── Scan(household_demographics)
++    │    └── Scan(date_dim)
+     └── Scan(call_center)
+`;
+
+document.addEventListener('DOMContentLoaded', function () {
+var targetElement = document.getElementById('myDiffElement');
+var configuration = {
+drawFileList: true,
+fileListToggle: false,
+fileListStartVisible: false,
+fileContentToggle: false,
+matching: 'lines',
+outputFormat: 'side-by-side',
+synchronisedScroll: true,
+highlight: true,
+renderNothingWhenEmpty: false,
+};
+var diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+diff2htmlUi.draw();
+diff2htmlUi.highlightCode();
+});
+</script>
+<body>
+<div id="myDiffElement"></div>
+</body>
+</html>
