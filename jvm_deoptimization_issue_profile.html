@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<style>
+	body {margin: 0; padding: 10px 10px 22px 10px; background-color: #ffffff}
+	h1 {margin: 5px 0 0 0; font-size: 18px; font-weight: normal; text-align: center}
+	header {margin: -24px 0 5px 0; line-height: 24px}
+	button {font: 12px sans-serif; cursor: pointer}
+	p {position: fixed; bottom: 0; margin: 0; padding: 2px 3px 2px 3px; outline: 1px solid #ffc000; display: none; overflow: hidden; white-space: nowrap; background-color: #ffffe0}
+	a {color: #0366d6}
+	#hl {position: absolute; display: none; overflow: hidden; white-space: nowrap; pointer-events: none; background-color: #ffffe0; outline: 1px solid #ffc000; height: 15px}
+	#hl span {padding: 0 3px 0 3px}
+	#status {left: 0}
+	#match {right: 0}
+	#reset {cursor: pointer}
+	#canvas {width: 100%; height: 832px}
+</style>
+</head>
+<body style='font: 12px Verdana, sans-serif'>
+<h1>CPU profile</h1>
+<header style='text-align: left'><button id='reverse' title='Reverse'>&#x1f53b;</button>&nbsp;&nbsp;<button id='search' title='Search'>&#x1f50d;</button></header>
+<header style='text-align: right'>Produced by <a href='https://github.com/jvm-profiling-tools/async-profiler'>async-profiler</a></header>
+<canvas id='canvas'></canvas>
+<div id='hl'><span></span></div>
+<p id='status'></p>
+<p id='match'>Matched: <span id='matchval'></span> <span id='reset' title='Clear'>&#x274c;</span></p>
+<script>
+	// Copyright 2020 Andrei Pangin
+	// Licensed under the Apache License, Version 2.0.
+	'use strict';
+	var root, rootLevel, px, pattern;
+	var reverse = false;
+	const levels = Array(52);
+	for (let h = 0; h < levels.length; h++) {
+		levels[h] = [];
+	}
+
+	const canvas = document.getElementById('canvas');
+	const c = canvas.getContext('2d');
+	const hl = document.getElementById('hl');
+	const status = document.getElementById('status');
+
+	const canvasWidth = canvas.offsetWidth;
+	const canvasHeight = canvas.offsetHeight;
+	canvas.style.width = canvasWidth + 'px';
+	canvas.width = canvasWidth * (devicePixelRatio || 1);
+	canvas.height = canvasHeight * (devicePixelRatio || 1);
+	if (devicePixelRatio) c.scale(devicePixelRatio, devicePixelRatio);
+	c.font = document.body.style.font;
+
+	const palette = [
+		[0xb2e1b2, 20, 20, 20],
+		[0x50e150, 30, 30, 30],
+		[0x50cccc, 30, 30, 30],
+		[0xe15a5a, 30, 40, 40],
+		[0xc8c83c, 30, 30, 10],
+		[0xe17d00, 30, 30,  0],
+		[0xcce880, 20, 20, 20],
+	];
+
+	function getColor(p) {
+		const v = Math.random();
+		return '#' + (p[0] + ((p[1] * v) << 16 | (p[2] * v) << 8 | (p[3] * v))).toString(16);
+	}
+
+	function f(level, left, width, type, title, inln, c1, int) {
+		levels[level].push({left: left, width: width, color: getColor(palette[type]), title: title,
+			details: (int ? ', int=' + int : '') + (c1 ? ', c1=' + c1 : '') + (inln ? ', inln=' + inln : '')
+		});
+	}
+
+	function samples(n) {
+		return n === 1 ? '1 sample' : n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' samples';
+	}
+
+	function pct(a, b) {
+		return a >= b ? '100' : (100 * a / b).toFixed(2);
+	}
+
+	function findFrame(frames, x) {
+		let left = 0;
+		let right = frames.length - 1;
+
+		while (left <= right) {
+			const mid = (left + right) >>> 1;
+			const f = frames[mid];
+
+			if (f.left > x) {
+				right = mid - 1;
+			} else if (f.left + f.width <= x) {
+				left = mid + 1;
+			} else {
+				return f;
+			}
+		}
+
+		if (frames[left] && (frames[left].left - x) * px < 0.5) return frames[left];
+		if (frames[right] && (x - (frames[right].left + frames[right].width)) * px < 0.5) return frames[right];
+
+		return null;
+	}
+
+	function search(r) {
+		if (r === true && (r = prompt('Enter regexp to search:', '')) === null) {
+			return;
+		}
+
+		pattern = r ? RegExp(r) : undefined;
+		const matched = render(root, rootLevel);
+		document.getElementById('matchval').textContent = pct(matched, root.width) + '%';
+		document.getElementById('match').style.display = r ? 'inline-block' : 'none';
+	}
+
+	function render(newRoot, newLevel) {
+		if (root) {
+			c.fillStyle = '#ffffff';
+			c.fillRect(0, 0, canvasWidth, canvasHeight);
+		}
+
+		root = newRoot || levels[0][0];
+		rootLevel = newLevel || 0;
+		px = canvasWidth / root.width;
+
+		const x0 = root.left;
+		const x1 = x0 + root.width;
+		const marked = [];
+
+		function mark(f) {
+			return marked[f.left] >= f.width || (marked[f.left] = f.width);
+		}
+
+		function totalMarked() {
+			let total = 0;
+			let left = 0;
+			Object.keys(marked).sort(function(a, b) { return a - b; }).forEach(function(x) {
+				if (+x >= left) {
+					total += marked[x];
+					left = +x + marked[x];
+				}
+			});
+			return total;
+		}
+
+		function drawFrame(f, y, alpha) {
+			if (f.left < x1 && f.left + f.width > x0) {
+				c.fillStyle = pattern && f.title.match(pattern) && mark(f) ? '#ee00ee' : f.color;
+				c.fillRect((f.left - x0) * px, y, f.width * px, 15);
+
+				if (f.width * px >= 21) {
+					const chars = Math.floor(f.width * px / 7);
+					const title = f.title.length <= chars ? f.title : f.title.substring(0, chars - 2) + '..';
+					c.fillStyle = '#000000';
+					c.fillText(title, Math.max(f.left - x0, 0) * px + 3, y + 12, f.width * px - 6);
+				}
+
+				if (alpha) {
+					c.fillStyle = 'rgba(255, 255, 255, 0.5)';
+					c.fillRect((f.left - x0) * px, y, f.width * px, 15);
+				}
+			}
+		}
+
+		for (let h = 0; h < levels.length; h++) {
+			const y = reverse ? h * 16 : canvasHeight - (h + 1) * 16;
+			const frames = levels[h];
+			for (let i = 0; i < frames.length; i++) {
+				drawFrame(frames[i], y, h < rootLevel);
+			}
+		}
+
+		return totalMarked();
+	}
+
+	canvas.onmousemove = function() {
+		const h = Math.floor((reverse ? event.offsetY : (canvasHeight - event.offsetY)) / 16);
+		if (h >= 0 && h < levels.length) {
+			const f = findFrame(levels[h], event.offsetX / px + root.left);
+			if (f) {
+				if (f != root) getSelection().removeAllRanges();
+				hl.style.left = (Math.max(f.left - root.left, 0) * px + canvas.offsetLeft) + 'px';
+				hl.style.width = (Math.min(f.width, root.width) * px) + 'px';
+				hl.style.top = ((reverse ? h * 16 : canvasHeight - (h + 1) * 16) + canvas.offsetTop) + 'px';
+				hl.firstChild.textContent = f.title;
+				hl.style.display = 'block';
+				canvas.title = f.title + '\n(' + samples(f.width) + f.details + ', ' + pct(f.width, levels[0][0].width) + '%)';
+				canvas.style.cursor = 'pointer';
+				canvas.onclick = function() {
+					if (f != root) {
+						render(f, h);
+						canvas.onmousemove();
+					}
+				};
+				status.textContent = 'Function: ' + canvas.title;
+				status.style.display = 'inline-block';
+				return;
+			}
+		}
+		canvas.onmouseout();
+	}
+
+	canvas.onmouseout = function() {
+		hl.style.display = 'none';
+		status.style.display = 'none';
+		canvas.title = '';
+		canvas.style.cursor = '';
+		canvas.onclick = '';
+	}
+
+	canvas.ondblclick = function() {
+		getSelection().selectAllChildren(hl);
+	}
+
+	document.getElementById('reverse').onclick = function() {
+		reverse = !reverse;
+		render();
+	}
+
+	document.getElementById('search').onclick = function() {
+		search(true);
+	}
+
+	document.getElementById('reset').onclick = function() {
+		search(false);
+	}
+
+	window.onkeydown = function() {
+		if (event.ctrlKey && event.keyCode === 70) {
+			event.preventDefault();
+			search(true);
+		} else if (event.keyCode === 27) {
+			search(false);
+		}
+	}
+
+f(0,0,3203,3,'all')
+f(1,0,1513,3,'[deoptimization]')
+f(2,3,1327,4,'Deoptimization::uncommon_trap(JavaThread*, int, int)')
+f(3,3,2,4,'AllocateHeap(unsigned long, MemoryType, AllocFailStrategy::AllocFailEnum)')
+f(3,5,1,4,'Arena::set_size_in_bytes(unsigned long)')
+f(3,6,1,4,'CompiledMethod::is_method_handle_return(unsigned char*)')
+f(3,7,1000,4,'Deoptimization::fetch_unroll_info_helper(JavaThread*, int)')
+f(4,24,1,4,'AbstractInterpreter::size_activation(int, int, int, int, int, int, bool)')
+f(4,25,23,4,'AllocateHeap(unsigned long, MemoryType, AllocFailStrategy::AllocFailEnum)')
+f(5,26,19,3,'__GI___libc_malloc')
+f(6,42,3,3,'_int_malloc')
+f(7,43,2,3,'unlink_chunk.isra.0')
+f(5,45,3,4,'os::malloc(unsigned long, MemoryType, NativeCallStack const&)')
+f(4,48,2,4,'CompiledMethod::is_compiled() const')
+f(4,50,46,4,'Events::log_deopt_message(Thread*, char const*, ...)')
+f(5,51,4,4,'Monitor::lock_without_safepoint_check()')
+f(6,53,2,3,'__tls_get_addr')
+f(7,53,2,3,'update_get_addr')
+f(8,53,2,3,'_dl_update_slotinfo')
+f(5,55,1,4,'Monitor::unlock()')
+f(5,56,1,3,'__clock_gettime')
+f(5,57,34,3,'jio_vsnprintf')
+f(6,57,2,3,'__vsnprintf')
+f(6,59,32,4,'os::vsnprintf(char*, unsigned long, char const*, __va_list_tag*)')
+f(7,60,31,3,'__vsnprintf')
+f(8,60,18,3,'__printf_buffer')
+f(9,71,1,3,'__memmove_evex_unaligned_erms')
+f(9,72,2,3,'__memset_evex_unaligned_erms')
+f(9,74,3,3,'__printf_buffer_pad_1')
+f(9,77,1,3,'__printf_buffer_write')
+f(8,78,1,3,'__printf_buffer_write')
+f(8,79,5,3,'__strchrnul_evex')
+f(8,84,5,3,'_itoa_word')
+f(8,89,2,3,'read_int')
+f(5,91,5,4,'os::elapsedTime()')
+f(6,94,1,3,'__clock_gettime')
+f(7,94,1,3,'__vdso_clock_gettime')
+f(6,95,1,3,'__vdso_clock_gettime')
+f(4,96,1,4,'GenericGrowableArray::raw_allocate(int)')
+f(4,97,4,4,'JavaThread::pd_last_frame()')
+f(5,97,2,4,'CodeBlob::is_zombie() const')
+f(5,99,2,4,'CodeCache::find_blob(void*)')
+f(6,100,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(4,101,3,4,'Monitor::unlock()')
+f(4,104,150,4,'RegisterMap::pd_location(VMRegImpl*) const')
+f(4,254,1,4,'TemplateInterpreter::deopt_entry(TosState, int)')
+f(4,255,2,3,'__tls_get_addr')
+f(5,256,1,3,'update_get_addr')
+f(4,257,6,4,'compiledVFrame::monitors() const')
+f(5,257,1,4,'GenericGrowableArray::raw_allocate(int)')
+f(5,258,1,4,'ScopeDesc::decode_monitor_values(int)')
+f(5,259,4,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,261,2,3,'__tls_get_addr')
+f(7,262,1,3,'update_get_addr')
+f(8,262,1,3,'_dl_update_slotinfo')
+f(4,263,1,4,'frame::frame(long*, long*, long*, unsigned char*)')
+f(4,264,2,4,'frame::interpreter_frame_bci() const')
+f(4,266,52,4,'frame::sender(RegisterMap*) const')
+f(5,273,1,4,'CodeBlob::is_compiled() const')
+f(5,274,7,4,'CodeBlob::is_deoptimization_stub() const')
+f(5,281,1,4,'CompiledMethod::is_compiled() const')
+f(5,282,19,4,'OopMapSet::update_register_map(frame const*, RegisterMap*)')
+f(6,289,4,4,'ImmutableOopMapSet::find_map_at_offset(int) const')
+f(6,293,1,4,'OopMapStream::find_next() [clone .part.40]')
+f(6,294,2,3,'__tls_get_addr')
+f(7,294,2,3,'update_get_addr')
+f(6,296,5,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,300,1,3,'__tls_get_addr')
+f(8,300,1,3,'update_get_addr')
+f(9,300,1,3,'_dl_update_slotinfo')
+f(5,301,1,4,'OopMapStream::find_next() [clone .part.40]')
+f(5,302,15,4,'frame::frame(long*, long*, long*, unsigned char*)')
+f(6,302,2,4,'CodeBlob::is_zombie() const')
+f(6,304,12,4,'CodeCache::find_blob(void*)')
+f(7,311,5,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(6,316,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(5,317,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(4,318,5,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(5,321,1,3,'__tls_get_addr')
+f(6,321,1,3,'update_get_addr')
+f(5,322,1,3,'__tls_get_addr_slow')
+f(4,323,1,4,'vframe::new_vframe(frame const*, RegisterMap const*, JavaThread*)')
+f(5,323,1,4,'frame::is_interpreted_frame() const')
+f(4,324,33,4,'vframe::new_vframe(frame const*, RegisterMap const*, JavaThread*) [clone .part.36]')
+f(5,325,8,4,'Arena::grow(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,327,5,4,'ChunkPool::allocate(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,327,2,4,'ThreadCritical::ThreadCritical()')
+f(8,327,2,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(7,329,3,4,'ThreadCritical::~ThreadCritical()')
+f(8,329,3,3,'__pthread_mutex_unlock_usercnt')
+f(6,332,1,4,'ThreadCritical::~ThreadCritical()')
+f(5,333,1,4,'CompiledMethod::scope_desc_at(unsigned char*)')
+f(5,334,18,4,'compiledVFrame::compiledVFrame(frame const*, RegisterMap const*, JavaThread*, CompiledMethod*)')
+f(6,334,11,4,'CompiledMethod::scope_desc_at(unsigned char*)')
+f(7,336,7,4,'ScopeDesc::decode_body()')
+f(8,340,3,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,342,1,3,'__tls_get_addr')
+f(10,342,1,3,'update_get_addr')
+f(7,343,2,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,344,1,3,'__tls_get_addr')
+f(9,344,1,3,'update_get_addr')
+f(10,344,1,3,'_dl_update_slotinfo')
+f(6,345,1,4,'RegisterMap::RegisterMap(RegisterMap const*)')
+f(6,346,6,4,'vframe::vframe(frame const*, RegisterMap const*, JavaThread*)')
+f(7,347,5,4,'RegisterMap::RegisterMap(RegisterMap const*)')
+f(5,352,4,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,355,1,3,'__tls_get_addr')
+f(7,355,1,3,'update_get_addr')
+f(5,356,1,4,'vframe::vframe(frame const*, RegisterMap const*, JavaThread*)')
+f(4,357,648,4,'vframeArray::allocate(JavaThread*, int, GrowableArray<compiledVFrame*>*, RegisterMap*, frame, frame, frame, bool)')
+f(5,467,10,4,'AllocateHeap(unsigned long, MemoryType, AllocFailStrategy::AllocFailEnum)')
+f(6,467,7,3,'__GI___libc_malloc')
+f(7,470,4,3,'_int_malloc')
+f(6,474,3,4,'os::malloc(unsigned long, MemoryType, NativeCallStack const&)')
+f(5,477,305,4,'RegisterMap::pd_location(VMRegImpl*) const')
+f(5,782,2,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(5,784,221,4,'vframeArrayElement::fill_in(compiledVFrame*, bool)')
+f(6,808,1,4,'HandleMark::~HandleMark()')
+f(6,809,1,4,'StackValue::create_stack_value(frame const*, RegisterMap const*, ScopeValue*)')
+f(6,810,5,3,'__tls_get_addr')
+f(6,815,1,3,'__tls_get_addr@plt')
+f(6,816,37,4,'compiledVFrame::expressions() const')
+f(7,820,22,4,'ScopeDesc::decode_scope_values(int)')
+f(8,824,2,4,'GenericGrowableArray::raw_allocate(int)')
+f(8,826,6,4,'ScopeValue::read_from(DebugInfoReadStream*)')
+f(9,827,3,4,'CompressedReadStream::read_signed_int()')
+f(9,830,1,4,'Location::Location(DebugInfoReadStream*)')
+f(9,831,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,832,3,3,'__tls_get_addr')
+f(8,835,1,3,'__tls_get_addr@plt')
+f(8,836,6,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,838,4,3,'__tls_get_addr')
+f(10,838,4,3,'update_get_addr')
+f(11,839,3,3,'_dl_update_slotinfo')
+f(7,842,1,4,'ScopeValue::is_location() const')
+f(7,843,4,4,'StackValue::create_stack_value(frame const*, RegisterMap const*, ScopeValue*)')
+f(8,844,3,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,845,2,3,'__tls_get_addr')
+f(10,845,1,3,'_dl_update_slotinfo')
+f(10,846,1,3,'update_get_addr')
+f(11,846,1,3,'_dl_update_slotinfo')
+f(7,847,6,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,852,1,3,'__tls_get_addr')
+f(9,852,1,3,'update_get_addr')
+f(10,852,1,3,'_dl_update_slotinfo')
+f(6,853,118,4,'compiledVFrame::locals() const')
+f(7,865,3,4,'LocationValue::is_location() const')
+f(7,868,56,4,'ScopeDesc::decode_scope_values(int)')
+f(8,873,1,4,'GenericGrowableArray::raw_allocate(int)')
+f(8,874,4,4,'Location::Location(DebugInfoReadStream*)')
+f(8,878,36,4,'ScopeValue::read_from(DebugInfoReadStream*)')
+f(9,885,2,4,'Location::Location(DebugInfoReadStream*)')
+f(9,887,1,3,'__tls_get_addr')
+f(9,888,2,3,'__tls_get_addr@plt')
+f(9,890,24,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(10,901,10,3,'__tls_get_addr')
+f(11,902,9,3,'update_get_addr')
+f(12,904,7,3,'_dl_update_slotinfo')
+f(10,911,3,3,'__tls_get_addr_slow')
+f(8,914,1,3,'__tls_get_addr')
+f(8,915,9,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,920,3,3,'__tls_get_addr')
+f(10,920,1,3,'_dl_update_slotinfo')
+f(10,921,2,3,'update_get_addr')
+f(9,923,1,3,'__tls_get_addr_slow')
+f(7,924,42,4,'StackValue::create_stack_value(frame const*, RegisterMap const*, ScopeValue*)')
+f(8,937,1,4,'Handle::Handle(Thread*, oopDesc*)')
+f(8,938,6,3,'__tls_get_addr')
+f(9,941,3,3,'update_get_addr')
+f(10,942,2,3,'_dl_update_slotinfo')
+f(8,944,22,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,952,12,3,'__tls_get_addr')
+f(10,952,2,3,'_dl_update_slotinfo')
+f(10,954,10,3,'update_get_addr')
+f(11,958,6,3,'_dl_update_slotinfo')
+f(9,964,2,3,'__tls_get_addr_slow')
+f(7,966,5,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,968,2,3,'__tls_get_addr')
+f(9,968,2,3,'update_get_addr')
+f(10,968,2,3,'_dl_update_slotinfo')
+f(8,970,1,3,'__tls_get_addr_slow')
+f(6,971,7,4,'compiledVFrame::monitors() const')
+f(7,972,1,4,'ScopeDesc::decode_monitor_values(int)')
+f(7,973,1,3,'__tls_get_addr')
+f(7,974,4,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,976,1,3,'__tls_get_addr')
+f(9,976,1,3,'update_get_addr')
+f(10,976,1,3,'_dl_update_slotinfo')
+f(8,977,1,3,'__tls_get_addr_slow')
+f(6,978,27,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,990,13,3,'__tls_get_addr')
+f(8,993,1,3,'_dl_update_slotinfo')
+f(8,994,9,3,'update_get_addr')
+f(9,1000,3,3,'_dl_update_slotinfo')
+f(7,1003,1,3,'__tls_get_addr_slow')
+f(7,1004,1,3,'update_get_addr')
+f(4,1005,1,4,'vframeArrayElement::fill_in(compiledVFrame*, bool)')
+f(4,1006,1,4,'vframeArrayElement::on_stack_size(int, int, bool, int) const')
+f(3,1007,320,4,'Deoptimization::uncommon_trap_inner(JavaThread*, int)')
+f(4,1011,9,4,'Chunk::next_chop()')
+f(5,1011,5,4,'ThreadCritical::ThreadCritical()')
+f(6,1011,5,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(5,1016,4,4,'ThreadCritical::~ThreadCritical()')
+f(6,1016,4,3,'__pthread_mutex_unlock_usercnt')
+f(4,1020,1,4,'CodeCache::find_compiled(void*)')
+f(4,1021,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(4,1022,61,4,'Deoptimization::revoke_biases_of_monitors(JavaThread*, frame, RegisterMap*)')
+f(5,1027,1,4,'Arena::set_size_in_bytes(unsigned long)')
+f(5,1028,10,4,'Chunk::next_chop()')
+f(6,1029,3,4,'ThreadCritical::ThreadCritical()')
+f(7,1029,3,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(6,1032,6,4,'ThreadCritical::~ThreadCritical()')
+f(7,1032,6,3,'__pthread_mutex_unlock_usercnt')
+f(5,1038,1,4,'HandleMark::~HandleMark()')
+f(5,1039,1,4,'ThreadCritical::~ThreadCritical()')
+f(5,1040,1,3,'__tls_get_addr')
+f(5,1041,11,3,'collect_monitors(compiledVFrame*, GrowableArray<Handle>*)')
+f(6,1042,1,3,'__tls_get_addr')
+f(6,1043,9,4,'compiledVFrame::monitors() const')
+f(7,1043,2,4,'GenericGrowableArray::raw_allocate(int)')
+f(7,1045,1,4,'ScopeDesc::decode_monitor_values(int)')
+f(7,1046,6,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,1050,2,3,'__tls_get_addr')
+f(9,1050,1,3,'_dl_update_slotinfo')
+f(9,1051,1,3,'update_get_addr')
+f(10,1051,1,3,'_dl_update_slotinfo')
+f(5,1052,4,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,1054,2,3,'__tls_get_addr')
+f(7,1054,2,3,'update_get_addr')
+f(8,1055,1,3,'_dl_update_slotinfo')
+f(5,1056,27,4,'vframe::new_vframe(frame const*, RegisterMap const*, JavaThread*) [clone .part.36]')
+f(6,1057,8,4,'Arena::grow(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1057,8,4,'ChunkPool::allocate(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,1058,2,4,'ThreadCritical::ThreadCritical()')
+f(9,1058,2,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(8,1060,2,4,'ThreadCritical::~ThreadCritical()')
+f(9,1060,2,3,'__pthread_mutex_unlock_usercnt')
+f(8,1062,3,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(6,1065,14,4,'compiledVFrame::compiledVFrame(frame const*, RegisterMap const*, JavaThread*, CompiledMethod*)')
+f(7,1065,10,4,'CompiledMethod::scope_desc_at(unsigned char*)')
+f(8,1067,6,4,'ScopeDesc::decode_body()')
+f(9,1071,2,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(10,1072,1,3,'__tls_get_addr')
+f(11,1072,1,3,'update_get_addr')
+f(8,1073,1,3,'__tls_get_addr')
+f(8,1074,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1075,2,4,'PcDescContainer::find_pc_desc_internal(unsigned char*, bool, PcDescSearch const&)')
+f(7,1077,2,4,'vframe::vframe(frame const*, RegisterMap const*, JavaThread*)')
+f(8,1077,2,4,'RegisterMap::RegisterMap(RegisterMap const*)')
+f(6,1079,4,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1081,2,3,'__tls_get_addr')
+f(8,1081,2,3,'update_get_addr')
+f(9,1082,1,3,'_dl_update_slotinfo')
+f(4,1083,134,4,'Events::log_deopt_message(Thread*, char const*, ...)')
+f(5,1083,11,4,'Monitor::lock_without_safepoint_check()')
+f(6,1090,4,3,'__tls_get_addr')
+f(7,1090,4,3,'update_get_addr')
+f(8,1091,3,3,'_dl_update_slotinfo')
+f(5,1094,3,4,'Monitor::unlock()')
+f(5,1097,112,3,'jio_vsnprintf')
+f(6,1098,110,4,'os::vsnprintf(char*, unsigned long, char const*, __va_list_tag*)')
+f(7,1098,1,3,'__printf_buffer_done')
+f(7,1099,109,3,'__vsnprintf')
+f(8,1101,1,3,'/usr/lib64/libc.so.6')
+f(8,1102,70,3,'__printf_buffer')
+f(9,1143,2,3,'/usr/lib64/libc.so.6')
+f(9,1145,11,3,'__memmove_evex_unaligned_erms')
+f(9,1156,2,3,'__memset_evex_unaligned_erms')
+f(9,1158,3,3,'__printf_buffer_pad_1')
+f(9,1161,11,3,'__printf_buffer_write')
+f(8,1172,2,3,'__printf_buffer_pad_1')
+f(8,1174,5,3,'__printf_buffer_write')
+f(8,1179,13,3,'__strchrnul_evex')
+f(8,1192,6,3,'__strlen_evex')
+f(8,1198,10,3,'_itoa_word')
+f(6,1208,1,3,'vsnprintf@plt')
+f(5,1209,8,4,'os::elapsedTime()')
+f(6,1209,7,3,'__clock_gettime')
+f(7,1210,6,3,'__vdso_clock_gettime')
+f(6,1216,1,3,'__vdso_clock_gettime')
+f(4,1217,8,4,'JavaThread::pd_last_frame()')
+f(5,1217,8,4,'CodeCache::find_blob(void*)')
+f(6,1223,2,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(4,1225,30,4,'Method::name_and_sig_as_C_string() const')
+f(5,1226,19,4,'Klass::external_name() const')
+f(6,1228,16,4,'Symbol::as_klass_external_name() const')
+f(7,1238,6,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,1240,2,3,'__tls_get_addr')
+f(9,1240,2,3,'update_get_addr')
+f(10,1241,1,3,'_dl_update_slotinfo')
+f(8,1242,2,3,'__tls_get_addr_slow')
+f(6,1244,1,3,'__strlen_evex')
+f(5,1245,7,4,'Symbol::as_C_string() const')
+f(6,1249,3,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1249,3,3,'__tls_get_addr')
+f(8,1250,1,3,'_dl_update_slotinfo')
+f(8,1251,1,3,'update_get_addr')
+f(9,1251,1,3,'_dl_update_slotinfo')
+f(5,1252,3,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,1253,2,3,'__tls_get_addr')
+f(7,1253,2,3,'update_get_addr')
+f(8,1253,2,3,'_dl_update_slotinfo')
+f(4,1255,2,4,'Monitor::unlock()')
+f(4,1257,1,4,'OopMapSet::update_register_map(frame const*, RegisterMap*)')
+f(4,1258,2,4,'Symbol::as_C_string() const')
+f(4,1260,1,4,'ThreadCritical::ThreadCritical()')
+f(4,1261,8,3,'__strcpy_evex')
+f(4,1269,2,3,'__strlen_evex')
+f(4,1271,1,3,'__tls_get_addr')
+f(5,1271,1,3,'update_get_addr')
+f(4,1272,1,3,'collect_monitors(compiledVFrame*, GrowableArray<Handle>*)')
+f(4,1273,1,4,'compiledVFrame::compiledVFrame(frame const*, RegisterMap const*, JavaThread*, CompiledMethod*)')
+f(4,1274,20,4,'frame::sender(RegisterMap*) const')
+f(5,1276,1,4,'CodeBlob::is_deoptimization_stub() const')
+f(5,1277,5,4,'OopMapSet::update_register_map(frame const*, RegisterMap*)')
+f(6,1279,2,3,'__tls_get_addr')
+f(7,1279,2,3,'update_get_addr')
+f(8,1280,1,3,'_dl_update_slotinfo')
+f(6,1281,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1281,1,3,'__tls_get_addr')
+f(8,1281,1,3,'update_get_addr')
+f(5,1282,1,3,'__tls_get_addr')
+f(5,1283,10,4,'frame::frame(long*, long*, long*, unsigned char*)')
+f(6,1284,8,4,'CodeCache::find_blob(void*)')
+f(7,1285,7,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(6,1292,1,4,'nmethod::is_zombie() const')
+f(5,1293,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(4,1294,1,4,'methodHandle::~methodHandle()')
+f(4,1295,1,4,'nmethodLocker::nmethodLocker(unsigned char*)')
+f(4,1296,3,4,'nmethodLocker::unlock_nmethod(CompiledMethod*)')
+f(4,1299,1,4,'os::elapsedTime()')
+f(4,1300,2,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(4,1302,1,3,'strcpy@plt')
+f(4,1303,24,4,'vframe::new_vframe(frame const*, RegisterMap const*, JavaThread*) [clone .part.36]')
+f(5,1303,6,4,'Arena::grow(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(6,1303,6,4,'ChunkPool::allocate(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(7,1303,1,4,'ThreadCritical::ThreadCritical()')
+f(8,1303,1,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(7,1304,4,4,'ThreadCritical::~ThreadCritical()')
+f(8,1304,4,3,'__pthread_mutex_unlock_usercnt')
+f(7,1308,1,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(5,1309,17,4,'compiledVFrame::compiledVFrame(frame const*, RegisterMap const*, JavaThread*, CompiledMethod*)')
+f(6,1311,14,4,'CompiledMethod::scope_desc_at(unsigned char*)')
+f(7,1311,1,4,'ScopeDesc::ScopeDesc(CompiledMethod const*, int, int, bool, bool, bool)')
+f(7,1312,6,4,'ScopeDesc::decode_body()')
+f(8,1315,3,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(9,1316,2,3,'__tls_get_addr')
+f(10,1316,2,3,'update_get_addr')
+f(11,1317,1,3,'_dl_update_slotinfo')
+f(7,1318,1,3,'__tls_get_addr@plt')
+f(7,1319,6,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,1321,4,3,'__tls_get_addr')
+f(9,1323,2,3,'update_get_addr')
+f(10,1324,1,3,'_dl_update_slotinfo')
+f(6,1325,1,4,'ScopeDesc::ScopeDesc(CompiledMethod const*, int, int, bool, bool, bool)')
+f(5,1326,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(3,1327,1,4,'Events::log_deopt_message(Thread*, char const*, ...)')
+f(3,1328,1,4,'HandleMark::~HandleMark()')
+f(3,1329,1,4,'vframeArrayElement::bci() const')
+f(2,1330,178,4,'Deoptimization::unpack_frames(JavaThread*, int)')
+f(3,1334,4,4,'Chunk::next_chop()')
+f(4,1336,2,4,'ThreadCritical::~ThreadCritical()')
+f(5,1336,2,3,'__pthread_mutex_unlock_usercnt')
+f(3,1338,1,4,'CodeBlob::is_compiled() const')
+f(3,1339,67,4,'Events::log_deopt_message(Thread*, char const*, ...)')
+f(4,1339,5,4,'Monitor::lock_without_safepoint_check()')
+f(5,1343,1,3,'__tls_get_addr')
+f(6,1343,1,3,'update_get_addr')
+f(4,1344,2,4,'Monitor::unlock()')
+f(4,1346,1,3,'__tls_get_addr@plt')
+f(4,1347,49,3,'jio_vsnprintf')
+f(5,1347,49,4,'os::vsnprintf(char*, unsigned long, char const*, __va_list_tag*)')
+f(6,1347,49,3,'__vsnprintf')
+f(7,1347,35,3,'__printf_buffer')
+f(8,1366,5,3,'__memmove_evex_unaligned_erms')
+f(8,1371,2,3,'__printf_buffer_pad_1')
+f(8,1373,9,3,'__printf_buffer_write')
+f(7,1382,8,3,'__strchrnul_evex')
+f(7,1390,3,3,'_itoa_word')
+f(7,1393,3,3,'read_int')
+f(4,1396,10,4,'os::elapsedTime()')
+f(5,1398,8,3,'__clock_gettime')
+f(6,1398,8,3,'__vdso_clock_gettime')
+f(3,1406,1,4,'JavaFrameAnchor::make_walkable(JavaThread*)')
+f(3,1407,7,4,'JavaThread::pd_last_frame()')
+f(4,1407,1,4,'CodeBlob::is_zombie() const')
+f(4,1408,5,4,'CodeCache::find_blob(void*)')
+f(5,1410,3,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(4,1413,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(3,1414,4,4,'Monitor::unlock()')
+f(3,1418,1,4,'RegisterMap::RegisterMap(JavaThread*, bool)')
+f(3,1419,1,4,'ThreadCritical::~ThreadCritical()')
+f(3,1420,1,3,'__tls_get_addr')
+f(4,1420,1,3,'update_get_addr')
+f(5,1420,1,3,'_dl_update_slotinfo')
+f(3,1421,1,3,'_int_free')
+f(3,1422,18,3,'free')
+f(4,1428,12,3,'_int_free')
+f(3,1440,2,4,'os::free(void*)')
+f(3,1442,65,4,'vframeArray::unpack_to_stack(frame&, int, int)')
+f(4,1445,9,3,'__tls_get_addr')
+f(5,1447,7,3,'update_get_addr')
+f(6,1450,4,3,'_dl_update_slotinfo')
+f(4,1454,1,4,'frame::interpreter_frame_local_at(int) const')
+f(4,1455,1,4,'frame::interpreter_frame_set_mdp(unsigned char*)')
+f(4,1456,11,4,'frame::sender(RegisterMap*) const')
+f(5,1458,9,4,'frame::frame(long*, long*, long*, unsigned char*)')
+f(6,1458,6,4,'CodeCache::find_blob(void*)')
+f(7,1458,6,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(6,1464,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(6,1465,2,4,'nmethod::is_zombie() const')
+f(4,1467,40,4,'vframeArrayElement::unpack_on_stack(int, int, int, frame*, bool, bool, int)')
+f(5,1482,5,4,'AbstractInterpreter::layout_activation(Method*, int, int, int, int, int, int, frame*, frame*, bool, bool)')
+f(5,1487,2,4,'AccessInternal::PostRuntimeDispatch<G1BarrierSet::AccessBarrier<1097844ul, G1BarrierSet>, (AccessInternal::BarrierType)2, 1097844ul>::oop_access_barrier(void*)')
+f(5,1489,1,4,'Klass::java_mirror() const')
+f(5,1490,6,4,'MethodData::bci_to_dp(int)')
+f(6,1491,4,4,'DataLayout::data_in()')
+f(7,1494,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(8,1494,1,3,'__tls_get_addr_slow')
+f(6,1495,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(5,1496,1,3,'__tls_get_addr')
+f(6,1496,1,3,'update_get_addr')
+f(7,1496,1,3,'_dl_update_slotinfo')
+f(5,1497,1,4,'frame::interpreter_frame_set_locals(long*)')
+f(5,1498,1,4,'frame::interpreter_frame_set_monitor_end(BasicObjectLock*)')
+f(5,1499,8,4,'frame::patch_pc(Thread*, unsigned char*)')
+f(6,1500,1,4,'CodeBlob::is_zombie() const')
+f(6,1501,5,4,'CodeCache::find_blob(void*)')
+f(7,1503,3,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(6,1506,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(3,1507,1,4,'vframeArrayElement::unpack_on_stack(int, int, int, frame*, bool, bool, int)')
+f(2,1508,1,3,'FreeHeap(void*)')
+f(2,1509,2,4,'HandleMark::initialize(Thread*)')
+f(2,1511,1,3,'__tls_get_addr')
+f(2,1512,1,4,'vframeArray::unpack_to_stack(frame&, int, int)')
+f(1,1513,6,3,'[no_Java_frame]')
+f(1,1519,8,3,'[unknown_Java]')
+f(2,1519,7,1,'I2C/C2I adapters')
+f(2,1526,1,3,'Interpreter')
+f(1,1527,200,3,'clone3')
+f(2,1527,200,3,'start_thread')
+f(3,1527,200,3,'thread_native_entry(Thread*)')
+f(4,1527,200,4,'Thread::call_run()')
+f(5,1527,199,4,'JavaThread::run()')
+f(6,1527,198,4,'CompileBroker::compiler_thread_loop()')
+f(7,1528,194,4,'CompileQueue::get()')
+f(8,1531,22,4,'CompileTask::free(CompileTask*)')
+f(9,1534,2,4,'JNIHandles::destroy_weak_global(_jobject*)')
+f(10,1535,1,4,'AccessInternal::PostRuntimeDispatch<G1BarrierSet::AccessBarrier<1196148ul, G1BarrierSet>, (AccessInternal::BarrierType)0, 1196148ul>::oop_access_barrier(void*, oopDesc*)')
+f(9,1536,2,4,'JNIHandles::is_weak_global_handle(_jobject*)')
+f(10,1536,1,4,'Monitor::unlock()')
+f(10,1537,1,4,'OopStorage::allocation_status(oopDesc* const*) const')
+f(11,1537,1,4,'Monitor::lock_without_safepoint_check()')
+f(9,1538,1,4,'Monitor::lock()')
+f(9,1539,14,4,'OopStorage::release(oopDesc* const*)')
+f(10,1542,11,4,'OopStorage::Block::release_entries(unsigned long, OopStorage::Block* volatile*)')
+f(8,1553,1,4,'JavaThread::is_Java_thread() const')
+f(8,1554,1,4,'Monitor::lock()')
+f(8,1555,13,4,'Monitor::unlock()')
+f(8,1568,140,4,'Monitor::wait(bool, long, bool)')
+f(9,1569,139,4,'Monitor::IWait(Thread*, long)')
+f(10,1587,47,3,'___pthread_cond_signal')
+f(11,1591,43,5,'entry_SYSCALL_64_after_hwframe')
+f(12,1591,43,5,'do_syscall_64')
+f(13,1591,42,5,'__x64_sys_futex')
+f(14,1591,42,5,'do_futex')
+f(15,1591,42,5,'futex_wake')
+f(16,1600,2,5,'_raw_spin_lock')
+f(16,1602,15,5,'futex_wake_mark')
+f(17,1608,9,5,'__futex_unqueue')
+f(18,1616,1,5,'plist_del')
+f(16,1617,16,5,'wake_up_q')
+f(17,1618,15,5,'try_to_wake_up')
+f(18,1618,15,5,'_raw_spin_unlock_irqrestore')
+f(13,1633,1,5,'syscall_enter_from_user_mode')
+f(10,1634,1,3,'__pthread_mutex_unlock@GLIBC_2.2.5')
+f(10,1635,73,4,'os::PlatformEvent::park(long)')
+f(11,1635,1,3,'__condvar_dec_grefs')
+f(11,1636,6,3,'__lll_lock_wake')
+f(12,1637,5,5,'entry_SYSCALL_64_after_hwframe')
+f(13,1637,5,5,'do_syscall_64')
+f(14,1637,3,5,'__x64_sys_futex')
+f(15,1637,3,5,'do_futex')
+f(16,1638,2,5,'futex_wake')
+f(14,1640,2,5,'syscall_enter_from_user_mode')
+f(11,1642,4,3,'__pthread_mutex_cond_lock')
+f(11,1646,2,3,'__pthread_mutex_lock@GLIBC_2.2.5')
+f(11,1648,1,5,'asm_sysvec_apic_timer_interrupt')
+f(12,1648,1,5,'sysvec_apic_timer_interrupt')
+f(13,1648,1,5,'__irq_exit_rcu')
+f(14,1648,1,5,'__do_softirq')
+f(15,1648,1,5,'run_rebalance_domains')
+f(16,1648,1,5,'update_blocked_averages')
+f(11,1649,58,3,'pthread_cond_timedwait@@GLIBC_2.3.2')
+f(12,1653,1,3,'__GI___pthread_disable_asynccancel')
+f(12,1654,52,3,'__futex_abstimed_wait_common')
+f(13,1657,49,5,'entry_SYSCALL_64_after_hwframe')
+f(14,1657,49,5,'do_syscall_64')
+f(15,1658,37,5,'__x64_sys_futex')
+f(16,1661,32,5,'do_futex')
+f(17,1661,32,5,'futex_wait')
+f(18,1663,2,5,'futex_setup_timer')
+f(19,1663,2,5,'hrtimer_init_sleeper')
+f(20,1663,2,5,'__hrtimer_init')
+f(18,1665,3,5,'futex_unqueue')
+f(18,1668,15,5,'futex_wait_queue')
+f(19,1668,3,5,'__futex_queue')
+f(20,1668,3,5,'plist_add')
+f(21,1670,1,5,'__list_add_valid')
+f(19,1671,2,5,'_raw_spin_unlock_irqrestore')
+f(19,1673,10,5,'schedule')
+f(20,1675,8,5,'__schedule')
+f(21,1678,5,5,'finish_task_switch.isra.0')
+f(18,1683,7,5,'futex_wait_setup')
+f(19,1683,7,5,'futex_q_lock')
+f(20,1687,1,5,'_raw_spin_lock')
+f(20,1688,2,5,'futex_hash')
+f(18,1690,3,5,'hrtimer_cancel')
+f(19,1690,2,5,'hrtimer_active')
+f(19,1692,1,5,'hrtimer_try_to_cancel.part.0')
+f(16,1693,2,5,'get_timespec64')
+f(17,1694,1,5,'_copy_from_user')
+f(15,1695,4,5,'syscall_enter_from_user_mode')
+f(15,1699,7,5,'syscall_exit_to_user_mode')
+f(16,1699,6,5,'exit_to_user_mode_prepare')
+f(17,1701,2,5,'__rseq_handle_notify_resume')
+f(18,1702,1,5,'__get_user_8')
+f(17,1703,2,5,'mem_cgroup_handle_over_high')
+f(16,1705,1,5,'syscall_exit_to_user_mode_prepare')
+f(12,1706,1,3,'__pthread_mutex_cond_lock')
+f(11,1707,1,3,'to_abstime(timespec*, long, bool)')
+f(12,1707,1,3,'__clock_gettime')
+f(13,1707,1,3,'__vdso_clock_gettime')
+f(8,1708,11,4,'TieredThresholdPolicy::select_task(CompileQueue*)')
+f(9,1710,1,4,'AccessFlags::atomic_clear_bits(int)')
+f(9,1711,5,4,'CompileBroker::compilation_is_complete(methodHandle const&, int, int)')
+f(10,1711,3,4,'InstanceKlass::lookup_osr_nmethod(Method const*, int, int, bool) const')
+f(11,1711,3,4,'Monitor::lock_without_safepoint_check()')
+f(12,1713,1,3,'__tls_get_addr')
+f(13,1713,1,3,'update_get_addr')
+f(14,1713,1,3,'_dl_update_slotinfo')
+f(10,1714,2,4,'Monitor::unlock()')
+f(9,1716,1,4,'TieredThresholdPolicy::is_method_profiled(Method*)')
+f(10,1716,1,4,'methodHandle::~methodHandle()')
+f(9,1717,2,4,'os::javaTimeMillis()')
+f(10,1717,2,3,'__vdso_gettimeofday')
+f(8,1719,3,3,'___pthread_cond_signal')
+f(9,1721,1,5,'entry_SYSCALL_64_after_hwframe')
+f(10,1721,1,5,'do_syscall_64')
+f(11,1721,1,5,'syscall_enter_from_user_mode')
+f(7,1722,1,4,'HandleMark::~HandleMark()')
+f(7,1723,1,4,'Monitor::lock()')
+f(7,1724,1,3,'__tls_get_addr')
+f(6,1725,1,4,'Monitor::unlock()')
+f(5,1726,1,4,'WatcherThread::run()')
+f(6,1726,1,4,'WatcherThread::sleep() const')
+f(7,1726,1,4,'Monitor::wait(bool, long, bool)')
+f(8,1726,1,4,'Monitor::ILock(Thread*)')
+f(1,1727,1476,1,'com/intellij/rt/testng/RemoteTestNGStarter.main')
+f(2,1727,1476,1,'com/intellij/rt/testng/IDEARemoteTestNG.run')
+f(3,1727,1476,1,'org/testng/TestNG.run')
+f(4,1727,1476,1,'org/testng/TestNG.runSuites')
+f(5,1727,1476,1,'org/testng/TestNG.runSuitesLocally')
+f(6,1727,1476,1,'org/testng/TestNG.runSuitesSequentially')
+f(7,1727,1476,1,'org/testng/SuiteRunnerWorker.run')
+f(8,1727,1476,1,'org/testng/SuiteRunnerWorker.runSuite')
+f(9,1727,1476,1,'org/testng/SuiteRunner.run')
+f(10,1727,1476,1,'org/testng/SuiteRunner.privateRun')
+f(11,1727,1476,1,'org/testng/SuiteRunner.runSequentially')
+f(12,1727,1476,1,'org/testng/SuiteRunner.runTest')
+f(13,1727,1476,1,'org/testng/TestRunner.run')
+f(14,1727,1476,1,'org/testng/TestRunner.privateRun')
+f(15,1727,1476,1,'java/util/ArrayList.forEach')
+f(16,1727,1476,1,'org/testng/TestRunner$$Lambda$154/810267739.accept')
+f(17,1727,1476,1,'org/testng/internal/invokers/TestMethodWorker.run')
+f(18,1727,1476,1,'org/testng/internal/invokers/TestMethodWorker.invokeTestMethods')
+f(19,1727,1476,1,'org/testng/internal/invokers/TestInvoker.invokeTestMethods')
+f(20,1727,1476,1,'org/testng/internal/invokers/TestInvoker$MethodInvocationAgent.invoke')
+f(21,1727,1476,1,'org/testng/internal/invokers/MethodRunner.runInSequence')
+f(22,1727,1476,1,'org/testng/internal/invokers/TestInvoker.invokeTestMethod')
+f(23,1727,1476,1,'org/testng/internal/invokers/TestInvoker.invokeMethod')
+f(24,1727,1476,1,'org/testng/internal/invokers/MethodInvocationHelper.invokeMethod')
+f(25,1727,1476,1,'java/lang/reflect/Method.invoke')
+f(26,1727,1476,1,'jdk/internal/reflect/DelegatingMethodAccessorImpl.invoke')
+f(27,1727,1476,1,'jdk/internal/reflect/NativeMethodAccessorImpl.invoke')
+f(28,1727,1476,1,'jdk/internal/reflect/NativeMethodAccessorImpl.invoke0')
+f(29,1727,1476,1,'com/facebook/presto/util/PagesSortBenchmark.reproDeOptInQuickSort')
+f(30,1727,1476,1,'com/facebook/presto/operator/PagesIndexOrdering.sort')
+f(31,1727,1476,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort',0,0,264)
+f(32,1978,13,1,'I2C/C2I adapters')
+f(32,1991,59,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(33,2049,1,1,'com/facebook/presto/common/block/SortOrder.compareBlockValue')
+f(32,2050,5,1,'com/facebook/presto/operator/PagesIndexOrdering.median3')
+f(33,2050,2,4,'Deoptimization::uncommon_trap(JavaThread*, int, int)')
+f(34,2050,1,4,'Deoptimization::uncommon_trap_inner(JavaThread*, int)')
+f(35,2050,1,3,'__tls_get_addr')
+f(36,2050,1,3,'update_get_addr')
+f(37,2050,1,3,'_dl_update_slotinfo')
+f(34,2051,1,4,'HandleMark::initialize(Thread*)')
+f(33,2052,3,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(32,2055,1148,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort',0,2,302)
+f(33,2279,11,1,'I2C/C2I adapters')
+f(33,2290,67,4,'InterpreterRuntime::frequency_counter_overflow(JavaThread*, unsigned char*)')
+f(34,2291,65,4,'InterpreterRuntime::frequency_counter_overflow_inner(JavaThread*, unsigned char*)')
+f(35,2293,61,4,'TieredThresholdPolicy::event(methodHandle const&, methodHandle const&, int, int, CompLevel, CompiledMethod*, JavaThread*)')
+f(36,2299,55,4,'TieredThresholdPolicy::method_back_branch_event(methodHandle const&, methodHandle const&, int, CompLevel, CompiledMethod*, JavaThread*)')
+f(37,2301,1,4,'Method::backedge_count()')
+f(37,2302,2,4,'TieredThresholdPolicy::loop_event(Method*, CompLevel, JavaThread*)')
+f(38,2302,2,4,'TieredThresholdPolicy::loop_predicate(int, int, CompLevel, Method*)')
+f(37,2304,50,4,'TieredThresholdPolicy::submit_compile(methodHandle const&, int, CompLevel, JavaThread*)')
+f(38,2304,48,4,'CompileBroker::compile_method(methodHandle const&, int, int, methodHandle const&, int, CompileTask::CompileReason, Thread*)')
+f(39,2304,1,4,'CompileBroker::compile_method_base(methodHandle const&, int, int, methodHandle const&, int, CompileTask::CompileReason, bool, Thread*)')
+f(40,2304,1,4,'InstanceKlass::lookup_osr_nmethod(Method const*, int, int, bool) const')
+f(39,2305,44,4,'CompileBroker::compile_method_base(methodHandle const&, int, int, methodHandle const&, int, CompileTask::CompileReason, bool, Thread*) [clone .part.194]')
+f(40,2306,1,4,'CompileTask::allocate()')
+f(40,2307,6,4,'CompileTask::initialize(int, methodHandle const&, int, int, methodHandle const&, int, CompileTask::CompileReason, bool)')
+f(41,2308,5,4,'JNIHandles::make_weak_global(Handle, AllocFailStrategy::AllocFailEnum)')
+f(42,2308,5,4,'OopStorage::allocate()')
+f(43,2310,2,4,'Monitor::lock_without_safepoint_check()')
+f(43,2312,1,4,'Monitor::unlock()')
+f(40,2313,6,4,'Monitor::lock(Thread*)')
+f(40,2319,1,4,'Monitor::notify_all()')
+f(40,2320,1,4,'Monitor::unlock()')
+f(40,2321,2,4,'Thread::muxAcquire(long volatile*, char const*)')
+f(40,2323,24,3,'___pthread_cond_signal')
+f(41,2325,22,5,'entry_SYSCALL_64_after_hwframe')
+f(42,2325,22,5,'do_syscall_64')
+f(43,2325,22,5,'__x64_sys_futex')
+f(44,2325,22,5,'do_futex')
+f(45,2325,22,5,'futex_wake')
+f(46,2332,2,5,'_raw_spin_lock')
+f(46,2334,1,5,'futex_wake_mark')
+f(46,2335,12,5,'wake_up_q')
+f(47,2335,12,5,'try_to_wake_up')
+f(48,2335,12,5,'_raw_spin_unlock_irqrestore')
+f(40,2347,2,4,'os::PlatformEvent::unpark()')
+f(39,2349,1,4,'InstanceKlass::lookup_osr_nmethod(Method const*, int, int, bool) const')
+f(40,2349,1,4,'Monitor::lock_without_safepoint_check()')
+f(41,2349,1,3,'__tls_get_addr')
+f(42,2349,1,3,'update_get_addr')
+f(39,2350,1,4,'Monitor::unlock()')
+f(39,2351,1,4,'os::PlatformEvent::unpark()')
+f(38,2352,1,4,'CompileBroker::compile_method_base(methodHandle const&, int, int, methodHandle const&, int, CompileTask::CompileReason, bool, Thread*) [clone .part.194]')
+f(38,2353,1,4,'InstanceKlass::lookup_osr_nmethod(Method const*, int, int, bool) const')
+f(35,2354,1,3,'__tls_get_addr')
+f(36,2354,1,3,'update_get_addr')
+f(37,2354,1,3,'_dl_update_slotinfo')
+f(35,2355,1,4,'resource_allocate_bytes(unsigned long, AllocFailStrategy::AllocFailEnum)')
+f(34,2356,1,4,'Monitor::unlock()')
+f(33,2357,2,4,'SharedRuntime::OSR_migration_begin(JavaThread*)')
+f(34,2357,1,4,'AllocateHeap(unsigned long, MemoryType, AllocFailStrategy::AllocFailEnum)')
+f(35,2357,1,3,'__GI___libc_malloc')
+f(34,2358,1,4,'JavaThread::pd_last_frame()')
+f(35,2358,1,4,'CodeCache::find_blob(void*)')
+f(36,2358,1,4,'CodeHeap::find_blob_unsafe(void*) const')
+f(33,2359,58,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(34,2410,6,1,'com/facebook/presto/common/block/SortOrder.compareBlockValue')
+f(35,2410,6,2,'com/facebook/presto/common/type/AbstractLongType.compareTo',6,0,0)
+f(36,2410,6,2,'com/facebook/presto/common/block/LongArrayBlock.getLong',6,0,0)
+f(37,2410,6,2,'com/facebook/presto/common/block/LongArrayBlock.getLongUnchecked',6,0,0)
+f(34,2416,1,1,'it/unimi/dsi/fastutil/objects/ObjectArrayList.get')
+f(33,2417,14,1,'com/facebook/presto/operator/PagesIndexOrdering.median3')
+f(34,2418,2,4,'Deoptimization::uncommon_trap(JavaThread*, int, int)')
+f(35,2418,1,4,'Deoptimization::uncommon_trap_inner(JavaThread*, int)')
+f(36,2418,1,3,'__tls_get_addr')
+f(37,2418,1,3,'update_get_addr')
+f(38,2418,1,3,'_dl_update_slotinfo')
+f(35,2419,1,4,'HandleMark::initialize(Thread*)')
+f(34,2420,11,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(33,2431,769,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort',0,0,317)
+f(34,2738,1,4,'HandleMark::~HandleMark()')
+f(34,2739,10,1,'I2C/C2I adapters')
+f(34,2749,71,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(35,2813,3,1,'com/facebook/presto/common/block/SortOrder.compareBlockValue')
+f(36,2813,3,2,'com/facebook/presto/common/type/AbstractLongType.compareTo',3,0,0)
+f(37,2813,3,2,'com/facebook/presto/common/block/LongArrayBlock.getLong',3,0,0)
+f(38,2813,3,2,'com/facebook/presto/common/block/LongArrayBlock.getLongUnchecked',3,0,0)
+f(35,2816,4,1,'it/unimi/dsi/fastutil/objects/ObjectArrayList.get')
+f(34,2820,1,1,'com/facebook/presto/operator/PagesIndex.swap')
+f(34,2821,26,1,'com/facebook/presto/operator/PagesIndexOrdering.median3')
+f(35,2824,3,4,'Deoptimization::uncommon_trap(JavaThread*, int, int)')
+f(36,2824,2,4,'Deoptimization::uncommon_trap_inner(JavaThread*, int)')
+f(36,2826,1,3,'__tls_get_addr@plt')
+f(35,2827,20,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(36,2846,1,5,'asm_sysvec_apic_timer_interrupt')
+f(37,2846,1,5,'sysvec_apic_timer_interrupt')
+f(38,2846,1,5,'__irq_exit_rcu')
+f(39,2846,1,5,'__do_softirq')
+f(40,2846,1,5,'run_timer_softirq')
+f(41,2846,1,5,'__run_timers')
+f(42,2846,1,5,'call_timer_fn')
+f(43,2846,1,5,'nvidia_rc_timer_callback?[nvidia]')
+f(44,2846,1,5,'rm_run_rc_callback?[nvidia]')
+f(45,2846,1,5,'_nv039942rm?[nvidia]')
+f(46,2846,1,5,'_nv010783rm?[nvidia]')
+f(47,2846,1,5,'_nv039911rm?[nvidia]')
+f(48,2846,1,5,'_nv048411rm?[nvidia]')
+f(49,2846,1,5,'_nv048404rm?[nvidia]')
+f(50,2846,1,5,'_nv030820rm?[nvidia]')
+f(51,2846,1,5,'_nv039770rm?[nvidia]')
+f(34,2847,352,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort')
+f(35,2852,107,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(36,2936,14,1,'com/facebook/presto/common/block/SortOrder.compareBlockValue')
+f(37,2938,12,2,'com/facebook/presto/common/type/AbstractLongType.compareTo',12,0,0)
+f(38,2938,12,2,'com/facebook/presto/common/block/LongArrayBlock.getLong',12,0,0)
+f(39,2938,12,2,'com/facebook/presto/common/block/LongArrayBlock.getLongUnchecked',12,0,0)
+f(36,2950,9,1,'it/unimi/dsi/fastutil/objects/ObjectArrayList.get')
+f(35,2959,8,1,'com/facebook/presto/operator/PagesIndexOrdering.median3',1,0,0)
+f(36,2960,7,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(35,2967,229,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort')
+f(36,2975,158,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(37,3094,19,1,'com/facebook/presto/common/block/SortOrder.compareBlockValue')
+f(38,3096,17,2,'com/facebook/presto/common/type/AbstractLongType.compareTo',17,0,0)
+f(39,3096,17,2,'com/facebook/presto/common/block/LongArrayBlock.getLong',17,0,0)
+f(40,3096,17,2,'com/facebook/presto/common/block/LongArrayBlock.getLongUnchecked',17,0,0)
+f(37,3113,5,1,'com/facebook/presto/operator/PagesIndex.getChannel')
+f(37,3118,15,1,'it/unimi/dsi/fastutil/objects/ObjectArrayList.get')
+f(36,3133,16,1,'com/facebook/presto/operator/PagesIndexOrdering.median3',4,0,0)
+f(37,3137,12,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(36,3149,41,1,'com/facebook/presto/operator/PagesIndexOrdering.quickSort')
+f(37,3153,37,1,'com/facebook/presto/$gen/PagesIndexComparator_20231025_075407_1.compareTo')
+f(36,3190,6,2,'com/facebook/presto/operator/PagesIndexOrdering.vectorSwap',6,0,0)
+f(35,3196,3,2,'com/facebook/presto/operator/PagesIndexOrdering.vectorSwap',3,0,0)
+f(34,3199,1,1,'com/facebook/presto/operator/PagesIndexOrdering.vectorSwap')
+f(33,3200,3,1,'com/facebook/presto/operator/PagesIndexOrdering.vectorSwap')
+
+search();
+</script></body></html>
