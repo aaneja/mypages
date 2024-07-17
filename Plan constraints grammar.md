@@ -1,5 +1,7 @@
 # Plan constraints grammar
 
+Pre read :  [This blog post](https://prestodb.io/blog/2024/03/21/elevating-presto-query-optimization/) and [overview doc](https://prestodb.io/wp-content/uploads/Search-Space-Improvements-Plan-Constraints.pdf) on plan constraints
+
 ## Grammar
 
 Grammar for plan constraints in Presto
