@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8" />
+    <!-- Make sure to load the highlight.js CSS file before the Diff2Html CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css" />
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css"
+    />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+</head>
+<script>
+    const diffString = `diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_01.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_01.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_01.txt	2024-08-09 09:56:39.763502946 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_01.txt	2024-08-09 09:56:39.863502785 +0530
+@@ -1,11 +1,13 @@
+-InnerJoin[REPLICATED] :
+-    ├── Scan(customer)
+-    └── InnerJoin[REPLICATED] :
+-         ├── InnerJoin[REPLICATED] :
+-         │    ├── Scan(store_returns)
+-         │    └── Scan(date_dim)
+-         └── InnerJoin[PARTITIONED] :
+-              ├── InnerJoin[REPLICATED] :
+-              │    ├── Scan(store_returns)
+-              │    └── Scan(date_dim)
+-              └── Scan(store)
++CrossJoin[REPLICATED] :
++    ├── LeftJoin[REPLICATED] :
++    │    ├── InnerJoin[PARTITIONED] :
++    │    │    ├── Scan(customer)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── InnerJoin[REPLICATED] :
++    │    │         │    ├── Scan(store_returns)
++    │    │         │    └── Scan(date_dim)
++    │    │         └── Scan(store)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── Scan(store_returns)
++    │         └── Scan(date_dim)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_04.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_04.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_04.txt	2024-08-09 09:56:39.767502939 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_04.txt	2024-08-09 09:56:39.867502779 +0530
+@@ -1,35 +1,35 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[PARTITIONED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(catalog_sales)
+     │    │    │    │    └── Scan(date_dim)
+     │    │    │    └── Scan(customer)
+     │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── InnerJoin[REPLICATED] :
+     │    │         │    ├── Scan(web_sales)
+     │    │         │    └── Scan(date_dim)
+     │    │         └── Scan(customer)
+-    │    └── InnerJoin[PARTITIONED] :
+-    │         ├── InnerJoin[PARTITIONED] :
+-    │         │    ├── InnerJoin[REPLICATED] :
+-    │         │    │    ├── Scan(catalog_sales)
+-    │         │    │    └── Scan(date_dim)
+-    │         │    └── Scan(customer)
+-    │         └── InnerJoin[PARTITIONED] :
+-    │              ├── InnerJoin[REPLICATED] :
+-    │              │    ├── Scan(web_sales)
+-    │              │    └── Scan(date_dim)
+-    │              └── Scan(customer)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── InnerJoin[REPLICATED] :
++    │         │    ├── Scan(store_sales)
++    │         │    └── Scan(date_dim)
++    │         └── Scan(customer)
+     └── InnerJoin[PARTITIONED] :
+-         ├── InnerJoin[REPLICATED] :
+-         │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── Scan(store_sales)
+-         │    │    └── Scan(date_dim)
+-         │    └── Scan(customer)
++         ├── InnerJoin[PARTITIONED] :
++         │    ├── InnerJoin[PARTITIONED] :
++         │    │    ├── InnerJoin[REPLICATED] :
++         │    │    │    ├── Scan(catalog_sales)
++         │    │    │    └── Scan(date_dim)
++         │    │    └── Scan(customer)
++         │    └── InnerJoin[PARTITIONED] :
++         │         ├── InnerJoin[REPLICATED] :
++         │         │    ├── Scan(web_sales)
++         │         │    └── Scan(date_dim)
++         │         └── Scan(customer)
+          └── InnerJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(store_sales)
+               │    └── Scan(date_dim)
+               └── Scan(customer)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_06.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_06.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_06.txt	2024-08-09 09:56:39.819502856 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_06.txt	2024-08-09 09:56:39.911502708 +0530
+@@ -1,13 +1,15 @@
+-InnerJoin[PARTITIONED] :
+-    ├── InnerJoin[REPLICATED] :
++CrossJoin[REPLICATED] :
++    ├── LeftJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── Scan(store_sales)
+-    │    │    └── InnerJoin[REPLICATED] :
+-    │    │         ├── Scan(date_dim)
+-    │    │         └── Scan(date_dim)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(item)
+-    │         └── Scan(item)
+-    └── InnerJoin[PARTITIONED] :
+-         ├── Scan(customer)
+-         └── Scan(customer_address)
++    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(store_sales)
++    │    │    │    │    └── InnerJoin[REPLICATED] :
++    │    │    │    │         ├── Scan(date_dim)
++    │    │    │    │         └── Scan(date_dim)
++    │    │    │    └── InnerJoin[PARTITIONED] :
++    │    │    │         ├── Scan(customer)
++    │    │    │         └── Scan(customer_address)
++    │    │    └── Scan(item)
++    │    └── Scan(item)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_07.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_07.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_07.txt	2024-08-09 09:56:39.823502849 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_07.txt	2024-08-09 09:56:39.919502694 +0530
+@@ -1,9 +1,9 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(store_sales)
+     │    │    │    └── Scan(customer_demographics)
+     │    │    └── Scan(date_dim)
+-    │    └── Scan(promotion)
++    │    └── Scan(promotion constraint on [p_channel_email, p_channel_event])
+     └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_08.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_08.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_08.txt	2024-08-09 09:56:39.811502868 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_08.txt	2024-08-09 09:56:39.907502714 +0530
+@@ -1,11 +1,11 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(store_sales)
+     │    │    └── Scan(date_dim)
+     │    └── Scan(store)
+     └── Union :
+-         ├── Scan(customer_address)
++         ├── Scan(customer_address constraint on [ca_zip])
+          └── InnerJoin[PARTITIONED] :
+               ├── Scan(customer_address)
+               └── Scan(customer)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_13.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_13.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_13.txt	2024-08-09 09:56:39.819502856 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_13.txt	2024-08-09 09:56:39.911502708 +0530
+@@ -1,11 +1,11 @@
+ InnerJoin[REPLICATED] :
+-    ├── InnerJoin[PARTITIONED] :
+-    │    ├── Scan(customer_demographics)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── InnerJoin[REPLICATED] :
+-    │         │    ├── InnerJoin[REPLICATED] :
+-    │         │    │    ├── Scan(store_sales)
+-    │         │    │    └── Scan(customer_address)
+-    │         │    └── Scan(date_dim)
+-    │         └── Scan(household_demographics)
+-    └── Scan(store)
++    ├── InnerJoin[REPLICATED] :
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(store_sales)
++    │    │    │    │    └── Scan(date_dim)
++    │    │    │    └── Scan(store)
++    │    │    └── Scan(customer_address)
++    │    └── Scan(household_demographics)
++    └── Scan(customer_demographics)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_14.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_14.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_14.txt	2024-08-09 09:56:39.787502906 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_14.txt	2024-08-09 09:56:39.883502753 +0530
+@@ -1,106 +1,106 @@
+ Union :
+     ├── CrossJoin[REPLICATED] :
+-    │    ├── SemiJoin[REPLICATED] :
++    │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(item)
++    │    │    │    ├── Scan(store_sales)
++    │    │    │    └── Scan(date_dim)
+     │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── Scan(item)
+-    │    │         └── Union :
+-    │    │              ├── InnerJoin[REPLICATED] :
+-    │    │              │    ├── InnerJoin[REPLICATED] :
+-    │    │              │    │    ├── Scan(store_sales)
+-    │    │              │    │    └── Scan(date_dim)
+-    │    │              │    └── Scan(item)
+-    │    │              ├── InnerJoin[REPLICATED] :
+-    │    │              │    ├── InnerJoin[REPLICATED] :
+-    │    │              │    │    ├── Scan(catalog_sales)
+-    │    │              │    │    └── Scan(date_dim)
+-    │    │              │    └── Scan(item)
+-    │    │              └── InnerJoin[REPLICATED] :
++    │    │         └── InnerJoin[PARTITIONED] :
++    │    │              ├── Scan(item)
++    │    │              └── Union :
+     │    │                   ├── InnerJoin[REPLICATED] :
+-    │    │                   │    ├── Scan(web_sales)
+-    │    │                   │    └── Scan(date_dim)
+-    │    │                   └── Scan(item)
++    │    │                   │    ├── InnerJoin[REPLICATED] :
++    │    │                   │    │    ├── Scan(store_sales)
++    │    │                   │    │    └── Scan(date_dim)
++    │    │                   │    └── Scan(item)
++    │    │                   ├── InnerJoin[REPLICATED] :
++    │    │                   │    ├── InnerJoin[REPLICATED] :
++    │    │                   │    │    ├── Scan(catalog_sales)
++    │    │                   │    │    └── Scan(date_dim)
++    │    │                   │    └── Scan(item)
++    │    │                   └── InnerJoin[REPLICATED] :
++    │    │                        ├── InnerJoin[REPLICATED] :
++    │    │                        │    ├── Scan(web_sales)
++    │    │                        │    └── Scan(date_dim)
++    │    │                        └── Scan(item)
+     │    └── Union :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(store_sales)
+     │         │    └── Scan(date_dim)
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(catalog_sales)
+     │         │    └── Scan(date_dim)
+     │         └── InnerJoin[REPLICATED] :
+     │              ├── Scan(web_sales)
+     │              └── Scan(date_dim)
+     ├── CrossJoin[REPLICATED] :
+-    │    ├── SemiJoin[PARTITIONED] :
++    │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(item)
++    │    │    │    ├── Scan(catalog_sales)
++    │    │    │    └── Scan(date_dim)
+     │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── Scan(item)
+-    │    │         └── Union :
+-    │    │              ├── InnerJoin[REPLICATED] :
+-    │    │              │    ├── InnerJoin[REPLICATED] :
+-    │    │              │    │    ├── Scan(store_sales)
+-    │    │              │    │    └── Scan(date_dim)
+-    │    │              │    └── Scan(item)
+-    │    │              ├── InnerJoin[REPLICATED] :
+-    │    │              │    ├── InnerJoin[REPLICATED] :
+-    │    │              │    │    ├── Scan(catalog_sales)
+-    │    │              │    │    └── Scan(date_dim)
+-    │    │              │    └── Scan(item)
+-    │    │              └── InnerJoin[REPLICATED] :
++    │    │         └── InnerJoin[PARTITIONED] :
++    │    │              ├── Scan(item)
++    │    │              └── Union :
++    │    │                   ├── InnerJoin[REPLICATED] :
++    │    │                   │    ├── InnerJoin[REPLICATED] :
++    │    │                   │    │    ├── Scan(store_sales)
++    │    │                   │    │    └── Scan(date_dim)
++    │    │                   │    └── Scan(item)
+     │    │                   ├── InnerJoin[REPLICATED] :
+-    │    │                   │    ├── Scan(web_sales)
+-    │    │                   │    └── Scan(date_dim)
+-    │    │                   └── Scan(item)
++    │    │                   │    ├── InnerJoin[REPLICATED] :
++    │    │                   │    │    ├── Scan(catalog_sales)
++    │    │                   │    │    └── Scan(date_dim)
++    │    │                   │    └── Scan(item)
++    │    │                   └── InnerJoin[REPLICATED] :
++    │    │                        ├── InnerJoin[REPLICATED] :
++    │    │                        │    ├── Scan(web_sales)
++    │    │                        │    └── Scan(date_dim)
++    │    │                        └── Scan(item)
+     │    └── Union :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(store_sales)
+     │         │    └── Scan(date_dim)
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(catalog_sales)
+     │         │    └── Scan(date_dim)
+     │         └── InnerJoin[REPLICATED] :
+     │              ├── Scan(web_sales)
+     │              └── Scan(date_dim)
+     └── CrossJoin[REPLICATED] :
+-         ├── SemiJoin[PARTITIONED] :
++         ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(web_sales)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(item)
++         │    │    ├── Scan(web_sales)
++         │    │    └── Scan(date_dim)
+          │    └── InnerJoin[PARTITIONED] :
+          │         ├── Scan(item)
+-         │         └── Union :
+-         │              ├── InnerJoin[REPLICATED] :
+-         │              │    ├── InnerJoin[REPLICATED] :
+-         │              │    │    ├── Scan(store_sales)
+-         │              │    │    └── Scan(date_dim)
+-         │              │    └── Scan(item)
+-         │              ├── InnerJoin[REPLICATED] :
+-         │              │    ├── InnerJoin[REPLICATED] :
+-         │              │    │    ├── Scan(catalog_sales)
+-         │              │    │    └── Scan(date_dim)
+-         │              │    └── Scan(item)
+-         │              └── InnerJoin[REPLICATED] :
++         │         └── InnerJoin[PARTITIONED] :
++         │              ├── Scan(item)
++         │              └── Union :
++         │                   ├── InnerJoin[REPLICATED] :
++         │                   │    ├── InnerJoin[REPLICATED] :
++         │                   │    │    ├── Scan(store_sales)
++         │                   │    │    └── Scan(date_dim)
++         │                   │    └── Scan(item)
+          │                   ├── InnerJoin[REPLICATED] :
+-         │                   │    ├── Scan(web_sales)
+-         │                   │    └── Scan(date_dim)
+-         │                   └── Scan(item)
++         │                   │    ├── InnerJoin[REPLICATED] :
++         │                   │    │    ├── Scan(catalog_sales)
++         │                   │    │    └── Scan(date_dim)
++         │                   │    └── Scan(item)
++         │                   └── InnerJoin[REPLICATED] :
++         │                        ├── InnerJoin[REPLICATED] :
++         │                        │    ├── Scan(web_sales)
++         │                        │    └── Scan(date_dim)
++         │                        └── Scan(item)
+          └── Union :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(store_sales)
+               │    └── Scan(date_dim)
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(catalog_sales)
+               │    └── Scan(date_dim)
+               └── InnerJoin[REPLICATED] :
+                    ├── Scan(web_sales)
+                    └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_16.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_16.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_16.txt	2024-08-09 09:56:39.719503017 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_16.txt	2024-08-09 09:56:39.835502831 +0530
+@@ -1,11 +1,11 @@
+ RightJoin[PARTITIONED] :
+     ├── Scan(catalog_returns)
+-    └── RightJoin[PARTITIONED] :
++    └── InnerJoin[REPLICATED] :
+          ├── Scan(catalog_sales)
+          └── InnerJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── InnerJoin[REPLICATED] :
+               │    │    ├── Scan(catalog_sales)
+               │    │    └── Scan(customer_address)
+               │    └── Scan(date_dim)
+               └── Scan(call_center)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_17.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_17.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_17.txt	2024-08-09 09:56:39.775502927 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_17.txt	2024-08-09 09:56:39.875502765 +0530
+@@ -1,15 +1,15 @@
+ InnerJoin[PARTITIONED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[PARTITIONED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── InnerJoin[REPLICATED] :
+-    │    │    │         ├── Scan(store_returns)
+-    │    │    │         └── Scan(date_dim)
+-    │    │    └── Scan(store)
+-    │    └── Scan(item)
++    ├── Scan(item)
+     └── InnerJoin[REPLICATED] :
+-         ├── Scan(catalog_sales)
+-         └── Scan(date_dim)
++         ├── InnerJoin[REPLICATED] :
++         │    ├── InnerJoin[REPLICATED] :
++         │    │    ├── Scan(catalog_sales)
++         │    │    └── InnerJoin[PARTITIONED] :
++         │    │         ├── InnerJoin[REPLICATED] :
++         │    │         │    ├── Scan(store_sales)
++         │    │         │    └── Scan(date_dim)
++         │    │         └── InnerJoin[REPLICATED] :
++         │    │              ├── Scan(store_returns)
++         │    │              └── Scan(date_dim)
++         │    └── Scan(date_dim)
++         └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_19.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_19.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_19.txt	2024-08-09 09:56:39.803502882 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_19.txt	2024-08-09 09:56:39.895502733 +0530
+@@ -1,11 +1,11 @@
+-InnerJoin[REPLICATED] :
+-    ├── InnerJoin[PARTITIONED] :
+-    │    ├── Scan(customer_address)
+-    │    └── InnerJoin[PARTITIONED] :
+-    │         ├── Scan(customer)
+-    │         └── InnerJoin[REPLICATED] :
+-    │              ├── InnerJoin[REPLICATED] :
+-    │              │    ├── Scan(store_sales)
+-    │              │    └── Scan(date_dim)
+-    │              └── Scan(item)
+-    └── Scan(store)
++InnerJoin[PARTITIONED] :
++    ├── Scan(customer_address)
++    └── InnerJoin[REPLICATED] :
++         ├── InnerJoin[PARTITIONED] :
++         │    ├── Scan(customer)
++         │    └── InnerJoin[REPLICATED] :
++         │         ├── InnerJoin[REPLICATED] :
++         │         │    ├── Scan(store_sales)
++         │         │    └── Scan(date_dim)
++         │         └── Scan(item)
++         └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_23.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_23.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_23.txt	2024-08-09 09:56:39.799502888 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_23.txt	2024-08-09 09:56:39.891502740 +0530
+@@ -1,39 +1,39 @@
+ Union :
+-    ├── SemiJoin[PARTITIONED] :
+-    │    ├── SemiJoin[PARTITIONED] :
++    ├── InnerJoin[PARTITIONED] :
++    │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    └── Scan(date_dim)
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(store_sales)
++    │    │    │    │    └── Scan(date_dim)
++    │    │    │    └── Scan(item)
+     │    │    └── InnerJoin[REPLICATED] :
+-    │    │         ├── InnerJoin[REPLICATED] :
+-    │    │         │    ├── Scan(store_sales)
+-    │    │         │    └── Scan(date_dim)
+-    │    │         └── Scan(item)
++    │    │         ├── Scan(catalog_sales)
++    │    │         └── Scan(date_dim)
+     │    └── CrossJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(store_sales)
+     │         │    └── Scan(customer)
+     │         └── InnerJoin[REPLICATED] :
+     │              ├── InnerJoin[REPLICATED] :
+     │              │    ├── Scan(store_sales)
+     │              │    └── Scan(date_dim)
+     │              └── Scan(customer)
+-    └── SemiJoin[PARTITIONED] :
+-         ├── SemiJoin[PARTITIONED] :
++    └── InnerJoin[PARTITIONED] :
++         ├── InnerJoin[PARTITIONED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── Scan(web_sales)
+-         │    │    └── Scan(date_dim)
++         │    │    ├── InnerJoin[REPLICATED] :
++         │    │    │    ├── Scan(store_sales)
++         │    │    │    └── Scan(date_dim)
++         │    │    └── Scan(item)
+          │    └── InnerJoin[REPLICATED] :
+-         │         ├── InnerJoin[REPLICATED] :
+-         │         │    ├── Scan(store_sales)
+-         │         │    └── Scan(date_dim)
+-         │         └── Scan(item)
++         │         ├── Scan(web_sales)
++         │         └── Scan(date_dim)
+          └── CrossJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(store_sales)
+               │    └── Scan(customer)
+               └── InnerJoin[REPLICATED] :
+                    ├── InnerJoin[REPLICATED] :
+                    │    ├── Scan(store_sales)
+                    │    └── Scan(date_dim)
+                    └── Scan(customer)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_24.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_24.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_24.txt	2024-08-09 09:56:39.747502972 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_24.txt	2024-08-09 09:56:39.851502804 +0530
+@@ -1,23 +1,23 @@
+ CrossJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── Scan(store_returns)
+     │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(store_sales)
+     │         │    └── InnerJoin[REPLICATED] :
+     │         │         ├── Scan(customer)
+     │         │         └── InnerJoin[REPLICATED] :
+     │         │              ├── Scan(customer_address)
+     │         │              └── Scan(store)
+     │         └── Scan(item)
+-    └── InnerJoin[REPLICATED] :
++    └── InnerJoin[PARTITIONED] :
+          ├── InnerJoin[PARTITIONED] :
+          │    ├── Scan(store_returns)
+          │    └── InnerJoin[REPLICATED] :
+          │         ├── Scan(store_sales)
+          │         └── InnerJoin[REPLICATED] :
+          │              ├── Scan(customer)
+          │              └── InnerJoin[REPLICATED] :
+          │                   ├── Scan(customer_address)
+          │                   └── Scan(store)
+          └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_25.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_25.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_25.txt	2024-08-09 09:56:39.743502977 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_25.txt	2024-08-09 09:56:39.847502811 +0530
+@@ -1,15 +1,15 @@
+ InnerJoin[PARTITIONED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[PARTITIONED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── InnerJoin[REPLICATED] :
+-    │    │    │         ├── Scan(store_returns)
+-    │    │    │         └── Scan(date_dim)
+-    │    │    └── Scan(store)
+-    │    └── Scan(item)
++    ├── Scan(item)
+     └── InnerJoin[REPLICATED] :
+-         ├── Scan(catalog_sales)
+-         └── Scan(date_dim)
++         ├── InnerJoin[REPLICATED] :
++         │    ├── InnerJoin[REPLICATED] :
++         │    │    ├── Scan(catalog_sales)
++         │    │    └── InnerJoin[PARTITIONED] :
++         │    │         ├── InnerJoin[REPLICATED] :
++         │    │         │    ├── Scan(store_sales)
++         │    │         │    └── Scan(date_dim)
++         │    │         └── InnerJoin[REPLICATED] :
++         │    │              ├── Scan(store_returns)
++         │    │              └── Scan(date_dim)
++         │    └── Scan(date_dim)
++         └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_26.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_26.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_26.txt	2024-08-09 09:56:39.783502914 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_26.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,9 +1,9 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(catalog_sales)
+     │    │    │    └── Scan(customer_demographics)
+     │    │    └── Scan(date_dim)
+-    │    └── Scan(promotion)
++    │    └── Scan(promotion constraint on [p_channel_email, p_channel_event])
+     └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_28.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_28.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_28.txt	2024-08-09 09:56:39.731502998 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_28.txt	2024-08-09 09:56:39.839502824 +0530
+@@ -1,11 +1,11 @@
+ CrossJoin[REPLICATED] :
+     ├── CrossJoin[REPLICATED] :
+     │    ├── CrossJoin[REPLICATED] :
+     │    │    ├── CrossJoin[REPLICATED] :
+     │    │    │    ├── CrossJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(store_sales)
+-    │    │    │    └── Scan(store_sales)
+-    │    │    └── Scan(store_sales)
+-    │    └── Scan(store_sales)
+-    └── Scan(store_sales)
++    │    │    │    │    ├── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
++    │    │    │    │    └── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
++    │    │    │    └── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
++    │    │    └── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
++    │    └── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
++    └── Scan(store_sales constraint on [ss_quantity, ss_list_price, ss_wholesale_cost, ss_coupon_amt])
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_29.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_29.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_29.txt	2024-08-09 09:56:39.771502934 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_29.txt	2024-08-09 09:56:39.871502772 +0530
+@@ -1,15 +1,15 @@
+ InnerJoin[PARTITIONED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── Scan(catalog_sales)
+-    │    └── Scan(date_dim)
++    ├── Scan(item)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+-         │    ├── InnerJoin[PARTITIONED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(store_sales)
+-         │    │    │    └── Scan(date_dim)
++         │    ├── InnerJoin[REPLICATED] :
++         │    │    ├── Scan(catalog_sales)
+          │    │    └── InnerJoin[REPLICATED] :
+-         │    │         ├── Scan(store_returns)
++         │    │         ├── InnerJoin[REPLICATED] :
++         │    │         │    ├── Scan(store_sales)
++         │    │         │    └── InnerJoin[REPLICATED] :
++         │    │         │         ├── Scan(store_returns)
++         │    │         │         └── Scan(date_dim)
+          │    │         └── Scan(date_dim)
+-         │    └── Scan(store)
+-         └── Scan(item)
++         │    └── Scan(date_dim)
++         └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_30.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_30.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_30.txt	2024-08-09 09:56:39.819502856 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_30.txt	2024-08-09 09:56:39.915502701 +0530
+@@ -1,15 +1,17 @@
+-InnerJoin[REPLICATED] :
+-    ├── InnerJoin[PARTITIONED] :
++CrossJoin[REPLICATED] :
++    ├── LeftJoin[REPLICATED] :
+     │    ├── InnerJoin[PARTITIONED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(web_returns)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(customer_address)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(customer)
++    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(web_returns)
++    │    │    │    │    └── Scan(date_dim)
++    │    │    │    └── Scan(customer_address)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(customer)
++    │    │         └── Scan(customer_address)
++    │    └── InnerJoin[PARTITIONED] :
++    │         ├── InnerJoin[REPLICATED] :
++    │         │    ├── Scan(web_returns)
++    │         │    └── Scan(date_dim)
+     │         └── Scan(customer_address)
+-    └── InnerJoin[PARTITIONED] :
+-         ├── InnerJoin[REPLICATED] :
+-         │    ├── Scan(web_returns)
+-         │    └── Scan(date_dim)
+-         └── Scan(customer_address)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_31.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_31.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_31.txt	2024-08-09 09:56:39.811502868 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_31.txt	2024-08-09 09:56:39.907502714 +0530
+@@ -1,35 +1,35 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(store_sales)
+     │    │    │    │    └── Scan(date_dim)
+     │    │    │    └── Scan(customer_address)
+-    │    │    └── InnerJoin[REPLICATED] :
++    │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── InnerJoin[REPLICATED] :
+-    │    │         │    ├── Scan(store_sales)
++    │    │         │    ├── Scan(web_sales)
+     │    │         │    └── Scan(date_dim)
+     │    │         └── Scan(customer_address)
+     │    └── InnerJoin[PARTITIONED] :
+     │         ├── InnerJoin[PARTITIONED] :
+     │         │    ├── InnerJoin[REPLICATED] :
+     │         │    │    ├── Scan(web_sales)
+     │         │    │    └── Scan(date_dim)
+     │         │    └── Scan(customer_address)
+     │         └── InnerJoin[PARTITIONED] :
+     │              ├── InnerJoin[REPLICATED] :
+     │              │    ├── Scan(web_sales)
+     │              │    └── Scan(date_dim)
+     │              └── Scan(customer_address)
+     └── InnerJoin[PARTITIONED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+          │    │    └── Scan(date_dim)
+          │    └── Scan(customer_address)
+-         └── InnerJoin[PARTITIONED] :
++         └── InnerJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+-              │    ├── Scan(web_sales)
++              │    ├── Scan(store_sales)
+               │    └── Scan(date_dim)
+               └── Scan(customer_address)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_32.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_32.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_32.txt	2024-08-09 09:56:39.795502895 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_32.txt	2024-08-09 09:56:39.891502740 +0530
+@@ -1,9 +1,11 @@
+-InnerJoin[REPLICATED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── Scan(catalog_sales)
+-    │    └── InnerJoin[PARTITIONED] :
++CrossJoin[REPLICATED] :
++    ├── RightJoin[PARTITIONED] :
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── Scan(catalog_sales)
++    │    │    └── Scan(date_dim)
++    │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(catalog_sales)
+-    │         │    └── Scan(date_dim)
+-    │         └── Scan(item)
+-    └── Scan(date_dim)
++    │         │    └── Scan(item)
++    │         └── Scan(date_dim)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_33.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_33.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_33.txt	2024-08-09 09:56:39.811502868 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_33.txt	2024-08-09 09:56:39.907502714 +0530
+@@ -1,28 +1,28 @@
+ Union :
+-    ├── SemiJoin[REPLICATED] :
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    ├── SemiJoin[REPLICATED] :
++    │    │    │    ├── Scan(store_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    └── SemiJoin[REPLICATED] :
++    │    │    │    ├── Scan(catalog_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(web_sales)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(customer_address)
+-         │    └── Scan(item)
+-         └── Scan(item)
++         │    │    ├── Scan(web_sales)
++         │    │    └── Scan(date_dim)
++         │    └── Scan(customer_address)
++         └── InnerJoin[REPLICATED] :
++              ├── Scan(item)
++              └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_41.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_41.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_41.txt	2024-08-09 09:56:39.739502984 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_41.txt	2024-08-09 09:56:39.843502817 +0530
+@@ -1,3 +1,3 @@
+ InnerJoin[REPLICATED] :
+     ├── Scan(item)
+-    └── Scan(item)
++    └── Scan(item constraint on [i_category, i_color, i_units, i_size])
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_42.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_42.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_42.txt	2024-08-09 09:56:39.751502966 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_42.txt	2024-08-09 09:56:39.855502797 +0530
+@@ -1,5 +1,5 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── Scan(store_sales)
+-    │    └── Scan(date_dim)
+-    └── Scan(item)
++    │    └── Scan(item)
++    └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_45.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_45.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_45.txt	2024-08-09 09:56:39.779502920 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_45.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,11 +1,11 @@
+-SemiJoin[REPLICATED] :
++SemiJoin[null] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(web_sales)
+     │    │    │    └── Scan(date_dim)
+     │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── Scan(customer_address)
+     │    │         └── Scan(customer)
+     │    └── Scan(item)
+     └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_46.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_46.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_46.txt	2024-08-09 09:56:39.823502849 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_46.txt	2024-08-09 09:56:39.915502701 +0530
+@@ -1,13 +1,13 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+-    │    ├── Scan(customer)
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(store_sales)
++    │    │    │    │    └── Scan(store)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    └── Scan(customer_address)
+     └── InnerJoin[PARTITIONED] :
+-         ├── InnerJoin[REPLICATED] :
+-         │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(store_sales)
+-         │    │    │    └── Scan(store)
+-         │    │    └── Scan(date_dim)
+-         │    └── Scan(household_demographics)
++         ├── Scan(customer)
+          └── Scan(customer_address)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_47.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_47.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_47.txt	2024-08-09 09:56:39.727503004 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_47.txt	2024-08-09 09:56:39.839502824 +0530
+@@ -1,23 +1,23 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
++    │    │    │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+     │    │    │    └── Scan(store)
+     │    │    └── Scan(item)
+     │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── InnerJoin[REPLICATED] :
+     │         │    │    ├── Scan(store_sales)
+-    │         │    │    └── Scan(date_dim)
++    │         │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+     │         │    └── Scan(store)
+     │         └── Scan(item)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+-         │    │    └── Scan(date_dim)
++         │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+          │    └── Scan(store)
+          └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_48.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_48.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_48.txt	2024-08-09 09:56:39.791502901 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_48.txt	2024-08-09 09:56:39.887502746 +0530
+@@ -1,9 +1,9 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(store_sales)
+-    │    │    │    └── Scan(customer_demographics)
+-    │    │    └── Scan(customer_address)
+-    │    └── Scan(date_dim)
+-    └── Scan(store)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(store)
++    │    └── Scan(customer_address)
++    └── Scan(customer_demographics)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_52.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_52.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_52.txt	2024-08-09 09:56:39.767502939 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_52.txt	2024-08-09 09:56:39.867502779 +0530
+@@ -1,5 +1,5 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── Scan(store_sales)
+-    │    └── Scan(date_dim)
+-    └── Scan(item)
++    │    └── Scan(item)
++    └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_53.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_53.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_53.txt	2024-08-09 09:56:39.799502888 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_53.txt	2024-08-09 09:56:39.895502733 +0530
+@@ -1,7 +1,7 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(store_sales)
+-    │    │    └── Scan(item)
++    │    │    └── Scan(item constraint on [i_class, i_brand, i_category])
+     │    └── Scan(date_dim)
+     └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_54.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_54.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_54.txt	2024-08-09 09:56:39.827502843 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_54.txt	2024-08-09 09:56:39.927502682 +0530
+@@ -1,21 +1,21 @@
+ CrossJoin[REPLICATED] :
+     ├── CrossJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(store_sales)
+-    │    │    │    └── InnerJoin[REPLICATED] :
++    │    │    │    └── InnerJoin[PARTITIONED] :
+     │    │    │         ├── InnerJoin[REPLICATED] :
+     │    │    │         │    ├── Scan(customer_address)
+-    │    │    │         │    └── SemiJoin[REPLICATED] :
+-    │    │    │         │         ├── Scan(customer)
+-    │    │    │         │         └── InnerJoin[REPLICATED] :
+-    │    │    │         │              ├── InnerJoin[REPLICATED] :
+-    │    │    │         │              │    ├── Union :
+-    │    │    │         │              │    │    ├── Scan(catalog_sales)
+-    │    │    │         │              │    │    └── Scan(web_sales)
+-    │    │    │         │              │    └── Scan(item)
+-    │    │    │         │              └── Scan(date_dim)
+-    │    │    │         └── Scan(store)
++    │    │    │         │    └── Scan(store)
++    │    │    │         └── InnerJoin[REPLICATED] :
++    │    │    │              ├── Scan(customer)
++    │    │    │              └── InnerJoin[REPLICATED] :
++    │    │    │                   ├── InnerJoin[REPLICATED] :
++    │    │    │                   │    ├── Union :
++    │    │    │                   │    │    ├── Scan(catalog_sales)
++    │    │    │                   │    │    └── Scan(web_sales)
++    │    │    │                   │    └── Scan(item)
++    │    │    │                   └── Scan(date_dim)
+     │    │    └── Scan(date_dim)
+     │    └── Scan(date_dim)
+     └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_55.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_55.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_55.txt	2024-08-09 09:56:39.799502888 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_55.txt	2024-08-09 09:56:39.895502733 +0530
+@@ -1,5 +1,5 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── Scan(store_sales)
+-    │    └── Scan(date_dim)
+-    └── Scan(item)
++    │    └── Scan(item)
++    └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_56.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_56.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_56.txt	2024-08-09 09:56:39.791502901 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_56.txt	2024-08-09 09:56:39.887502746 +0530
+@@ -1,28 +1,28 @@
+ Union :
+-    ├── SemiJoin[REPLICATED] :
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    ├── SemiJoin[REPLICATED] :
++    │    │    │    ├── Scan(store_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    └── SemiJoin[REPLICATED] :
+-         ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── Scan(catalog_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[REPLICATED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    └── InnerJoin[REPLICATED] :
++         ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(web_sales)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(customer_address)
+-         │    └── Scan(item)
+-         └── Scan(item)
++         │    │    ├── Scan(web_sales)
++         │    │    └── Scan(date_dim)
++         │    └── Scan(customer_address)
++         └── InnerJoin[REPLICATED] :
++              ├── Scan(item)
++              └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_57.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_57.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_57.txt	2024-08-09 09:56:39.711503030 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_57.txt	2024-08-09 09:56:39.835502831 +0530
+@@ -1,23 +1,23 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    │    └── Scan(date_dim)
++    │    │    │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+     │    │    │    └── Scan(call_center)
+     │    │    └── Scan(item)
+     │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── InnerJoin[REPLICATED] :
+     │         │    │    ├── Scan(catalog_sales)
+-    │         │    │    └── Scan(date_dim)
++    │         │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+     │         │    └── Scan(call_center)
+     │         └── Scan(item)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(catalog_sales)
+-         │    │    └── Scan(date_dim)
++         │    │    └── Scan(date_dim constraint on [d_year, d_moy])
+          │    └── Scan(call_center)
+          └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_58.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_58.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_58.txt	2024-08-09 09:56:39.819502856 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_58.txt	2024-08-09 09:56:39.915502701 +0530
+@@ -1,29 +1,29 @@
+ InnerJoin[PARTITIONED] :
+-    ├── SemiJoin[REPLICATED] :
++    ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(store_sales)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(item)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(date_dim)
+-    │         └── Scan(date_dim)
++    │    │    ├── Scan(catalog_sales)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(date_dim)
++    │    │         └── InnerJoin[REPLICATED] :
++    │    │              ├── Scan(date_dim)
++    │    │              └── Scan(date_dim)
++    │    └── Scan(item)
+     └── InnerJoin[PARTITIONED] :
+-         ├── SemiJoin[REPLICATED] :
++         ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(catalog_sales)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(item)
+-         │    └── InnerJoin[REPLICATED] :
+-         │         ├── Scan(date_dim)
+-         │         └── Scan(date_dim)
+-         └── SemiJoin[REPLICATED] :
++         │    │    ├── Scan(store_sales)
++         │    │    └── InnerJoin[REPLICATED] :
++         │    │         ├── Scan(date_dim)
++         │    │         └── InnerJoin[REPLICATED] :
++         │    │              ├── Scan(date_dim)
++         │    │              └── Scan(date_dim)
++         │    └── Scan(item)
++         └── InnerJoin[PARTITIONED] :
+               ├── InnerJoin[REPLICATED] :
+-              │    ├── InnerJoin[REPLICATED] :
+-              │    │    ├── Scan(web_sales)
+-              │    │    └── Scan(date_dim)
+-              │    └── Scan(item)
+-              └── InnerJoin[REPLICATED] :
+-                   ├── Scan(date_dim)
+-                   └── Scan(date_dim)
++              │    ├── Scan(web_sales)
++              │    └── InnerJoin[REPLICATED] :
++              │         ├── Scan(date_dim)
++              │         └── InnerJoin[REPLICATED] :
++              │              ├── Scan(date_dim)
++              │              └── Scan(date_dim)
++              └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_59.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_59.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_59.txt	2024-08-09 09:56:39.755502959 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_59.txt	2024-08-09 09:56:39.859502792 +0530
+@@ -1,15 +1,15 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[REPLICATED] :
+-    │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(store_sales)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(date_dim)
+-    │    └── Scan(store)
+-    └── InnerJoin[REPLICATED] :
++    │    ├── Scan(store_sales)
++    │    └── Scan(date_dim)
++    └── InnerJoin[PARTITIONED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── Scan(store_sales)
++         │    │    ├── InnerJoin[REPLICATED] :
++         │    │    │    ├── Scan(store_sales)
++         │    │    │    └── Scan(date_dim)
+          │    │    └── Scan(date_dim)
+          │    └── Scan(date_dim)
+-         └── Scan(store)
++         └── InnerJoin[PARTITIONED] :
++              ├── Scan(store)
++              └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_60.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_60.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_60.txt	2024-08-09 09:56:39.763502946 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_60.txt	2024-08-09 09:56:39.863502785 +0530
+@@ -1,28 +1,28 @@
+ Union :
+-    ├── SemiJoin[REPLICATED] :
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(store_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    ├── SemiJoin[REPLICATED] :
++    │    │    │    ├── Scan(store_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[PARTITIONED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    │    ├── Scan(catalog_sales)
+-    │    │    │    │    └── Scan(date_dim)
+-    │    │    │    └── Scan(customer_address)
+-    │    │    └── Scan(item)
+-    │    └── Scan(item)
+-    └── SemiJoin[REPLICATED] :
+-         ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── Scan(catalog_sales)
++    │    │    │    └── Scan(date_dim)
++    │    │    └── Scan(customer_address)
++    │    └── InnerJoin[PARTITIONED] :
++    │         ├── Scan(item)
++    │         └── Scan(item)
++    └── InnerJoin[REPLICATED] :
++         ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(web_sales)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(customer_address)
+-         │    └── Scan(item)
+-         └── Scan(item)
++         │    │    ├── Scan(web_sales)
++         │    │    └── Scan(date_dim)
++         │    └── Scan(customer_address)
++         └── InnerJoin[PARTITIONED] :
++              ├── Scan(item)
++              └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_61.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_61.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_61.txt	2024-08-09 09:56:39.791502901 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_61.txt	2024-08-09 09:56:39.887502746 +0530
+@@ -1,25 +1,25 @@
+ CrossJoin[REPLICATED] :
+-    ├── InnerJoin[PARTITIONED] :
+-    │    ├── InnerJoin[REPLICATED] :
++    ├── InnerJoin[REPLICATED] :
++    │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    ├── Scan(store_sales)
+     │    │    │    │    │    └── Scan(date_dim)
+     │    │    │    │    └── Scan(item)
+     │    │    │    └── Scan(store)
+-    │    │    └── Scan(promotion)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(customer)
+-    │         └── Scan(customer_address)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(customer)
++    │    │         └── Scan(customer_address)
++    │    └── Scan(promotion constraint on [p_channel_dmail, p_channel_tv, p_channel_email])
+     └── InnerJoin[PARTITIONED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── InnerJoin[REPLICATED] :
+          │    │    │    ├── Scan(store_sales)
+          │    │    │    └── Scan(date_dim)
+          │    │    └── Scan(item)
+          │    └── Scan(store)
+          └── InnerJoin[REPLICATED] :
+               ├── Scan(customer)
+               └── Scan(customer_address)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_63.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_63.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_63.txt	2024-08-09 09:56:39.779502920 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_63.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,7 +1,7 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(store_sales)
+-    │    │    └── Scan(item)
++    │    │    └── Scan(item constraint on [i_class, i_brand, i_category])
+     │    └── Scan(date_dim)
+     └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_64.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_64.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_64.txt	2024-08-09 09:56:39.827502843 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_64.txt	2024-08-09 09:56:39.927502682 +0530
+@@ -1,75 +1,75 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+     │    ├── Scan(customer_address)
+-    │    └── InnerJoin[PARTITIONED] :
++    │    └── InnerJoin[REPLICATED] :
+     │         ├── Scan(customer_address)
+     │         └── InnerJoin[REPLICATED] :
+     │              ├── InnerJoin[REPLICATED] :
+     │              │    ├── InnerJoin[REPLICATED] :
+     │              │    │    ├── InnerJoin[REPLICATED] :
+     │              │    │    │    ├── InnerJoin[REPLICATED] :
+-    │              │    │    │    │    ├── InnerJoin[REPLICATED] :
++    │              │    │    │    │    ├── InnerJoin[PARTITIONED] :
+     │              │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+     │              │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+-    │              │    │    │    │    │    │    │    ├── InnerJoin[PARTITIONED] :
+-    │              │    │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
++    │              │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
++    │              │    │    │    │    │    │    │    │    ├── InnerJoin[PARTITIONED] :
+     │              │    │    │    │    │    │    │    │    │    ├── Scan(store_sales)
+-    │              │    │    │    │    │    │    │    │    │    └── Scan(date_dim)
+-    │              │    │    │    │    │    │    │    │    └── InnerJoin[REPLICATED] :
+-    │              │    │    │    │    │    │    │    │         ├── Scan(store_returns)
+-    │              │    │    │    │    │    │    │    │         └── InnerJoin[PARTITIONED] :
+-    │              │    │    │    │    │    │    │    │              ├── Scan(catalog_sales)
+-    │              │    │    │    │    │    │    │    │              └── Scan(catalog_returns)
+-    │              │    │    │    │    │    │    │    └── Scan(customer_demographics)
+-    │              │    │    │    │    │    │    └── InnerJoin[REPLICATED] :
+-    │              │    │    │    │    │    │         ├── InnerJoin[REPLICATED] :
+-    │              │    │    │    │    │    │         │    ├── Scan(customer)
+-    │              │    │    │    │    │    │         │    └── Scan(date_dim)
+-    │              │    │    │    │    │    │         └── Scan(date_dim)
+-    │              │    │    │    │    │    └── Scan(store)
+-    │              │    │    │    │    └── Scan(item)
+-    │              │    │    │    └── Scan(customer_demographics)
++    │              │    │    │    │    │    │    │    │    │    └── Scan(store_returns)
++    │              │    │    │    │    │    │    │    │    └── Scan(date_dim)
++    │              │    │    │    │    │    │    │    └── InnerJoin[PARTITIONED] :
++    │              │    │    │    │    │    │    │         ├── Scan(catalog_sales)
++    │              │    │    │    │    │    │    │         └── Scan(catalog_returns)
++    │              │    │    │    │    │    │    └── Scan(customer_demographics)
++    │              │    │    │    │    │    └── InnerJoin[REPLICATED] :
++    │              │    │    │    │    │         ├── InnerJoin[REPLICATED] :
++    │              │    │    │    │    │         │    ├── InnerJoin[REPLICATED] :
++    │              │    │    │    │    │         │    │    ├── Scan(customer)
++    │              │    │    │    │    │         │    │    └── Scan(date_dim)
++    │              │    │    │    │    │         │    └── Scan(date_dim)
++    │              │    │    │    │    │         └── Scan(customer_demographics)
++    │              │    │    │    │    └── Scan(store)
++    │              │    │    │    └── Scan(item)
+     │              │    │    └── Scan(promotion)
+     │              │    └── InnerJoin[REPLICATED] :
+     │              │         ├── Scan(household_demographics)
+     │              │         └── Scan(income_band)
+     │              └── InnerJoin[REPLICATED] :
+     │                   ├── Scan(household_demographics)
+     │                   └── Scan(income_band)
+     └── InnerJoin[PARTITIONED] :
+          ├── Scan(customer_address)
+-         └── InnerJoin[PARTITIONED] :
++         └── InnerJoin[REPLICATED] :
+               ├── Scan(customer_address)
+               └── InnerJoin[REPLICATED] :
+                    ├── InnerJoin[REPLICATED] :
+                    │    ├── InnerJoin[REPLICATED] :
+                    │    │    ├── InnerJoin[REPLICATED] :
+                    │    │    │    ├── InnerJoin[REPLICATED] :
+-                   │    │    │    │    ├── InnerJoin[REPLICATED] :
++                   │    │    │    │    ├── InnerJoin[PARTITIONED] :
+                    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+                    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+-                   │    │    │    │    │    │    │    ├── InnerJoin[PARTITIONED] :
+-                   │    │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
++                   │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
++                   │    │    │    │    │    │    │    │    ├── InnerJoin[PARTITIONED] :
+                    │    │    │    │    │    │    │    │    │    ├── Scan(store_sales)
+-                   │    │    │    │    │    │    │    │    │    └── Scan(date_dim)
+-                   │    │    │    │    │    │    │    │    └── InnerJoin[REPLICATED] :
+-                   │    │    │    │    │    │    │    │         ├── Scan(store_returns)
+-                   │    │    │    │    │    │    │    │         └── InnerJoin[PARTITIONED] :
+-                   │    │    │    │    │    │    │    │              ├── Scan(catalog_sales)
+-                   │    │    │    │    │    │    │    │              └── Scan(catalog_returns)
+-                   │    │    │    │    │    │    │    └── Scan(customer_demographics)
+-                   │    │    │    │    │    │    └── InnerJoin[REPLICATED] :
+-                   │    │    │    │    │    │         ├── InnerJoin[REPLICATED] :
+-                   │    │    │    │    │    │         │    ├── Scan(customer)
+-                   │    │    │    │    │    │         │    └── Scan(date_dim)
+-                   │    │    │    │    │    │         └── Scan(date_dim)
+-                   │    │    │    │    │    └── Scan(store)
+-                   │    │    │    │    └── Scan(item)
+-                   │    │    │    └── Scan(customer_demographics)
++                   │    │    │    │    │    │    │    │    │    └── Scan(store_returns)
++                   │    │    │    │    │    │    │    │    └── Scan(date_dim)
++                   │    │    │    │    │    │    │    └── InnerJoin[PARTITIONED] :
++                   │    │    │    │    │    │    │         ├── Scan(catalog_sales)
++                   │    │    │    │    │    │    │         └── Scan(catalog_returns)
++                   │    │    │    │    │    │    └── Scan(customer_demographics)
++                   │    │    │    │    │    └── InnerJoin[REPLICATED] :
++                   │    │    │    │    │         ├── InnerJoin[REPLICATED] :
++                   │    │    │    │    │         │    ├── InnerJoin[REPLICATED] :
++                   │    │    │    │    │         │    │    ├── Scan(customer)
++                   │    │    │    │    │         │    │    └── Scan(date_dim)
++                   │    │    │    │    │         │    └── Scan(date_dim)
++                   │    │    │    │    │         └── Scan(customer_demographics)
++                   │    │    │    │    └── Scan(store)
++                   │    │    │    └── Scan(item)
+                    │    │    └── Scan(promotion)
+                    │    └── InnerJoin[REPLICATED] :
+                    │         ├── Scan(household_demographics)
+                    │         └── Scan(income_band)
+                    └── InnerJoin[REPLICATED] :
+                         ├── Scan(household_demographics)
+                         └── Scan(income_band)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_68.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_68.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_68.txt	2024-08-09 09:56:39.775502927 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_68.txt	2024-08-09 09:56:39.875502765 +0530
+@@ -1,13 +1,13 @@
+ InnerJoin[PARTITIONED] :
+-    ├── Scan(customer_address)
+-    └── InnerJoin[PARTITIONED] :
+-         ├── Scan(customer)
+-         └── InnerJoin[PARTITIONED] :
+-              ├── Scan(customer_address)
+-              └── InnerJoin[REPLICATED] :
+-                   ├── InnerJoin[REPLICATED] :
+-                   │    ├── InnerJoin[REPLICATED] :
+-                   │    │    ├── Scan(store_sales)
+-                   │    │    └── Scan(date_dim)
+-                   │    └── Scan(store)
+-                   └── Scan(household_demographics)
++    ├── InnerJoin[PARTITIONED] :
++    │    ├── Scan(customer)
++    │    └── InnerJoin[PARTITIONED] :
++    │         ├── Scan(customer_address)
++    │         └── InnerJoin[REPLICATED] :
++    │              ├── InnerJoin[REPLICATED] :
++    │              │    ├── InnerJoin[REPLICATED] :
++    │              │    │    ├── Scan(store_sales)
++    │              │    │    └── Scan(date_dim)
++    │              │    └── Scan(store)
++    │              └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
++    └── Scan(customer_address)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_70.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_70.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_70.txt	2024-08-09 09:56:39.703503041 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_70.txt	2024-08-09 09:56:39.831502836 +0530
+@@ -1,11 +1,11 @@
+-SemiJoin[PARTITIONED] :
++InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(store_sales)
+     │    │    └── Scan(date_dim)
+     │    └── Scan(store)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── Scan(store_sales)
+          │    └── Scan(date_dim)
+          └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_72.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_72.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_72.txt	2024-08-09 09:56:39.783502914 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_72.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,21 +1,21 @@
+ LeftJoin[PARTITIONED] :
+     ├── LeftJoin[REPLICATED] :
+-    │    ├── InnerJoin[REPLICATED] :
++    │    ├── InnerJoin[PARTITIONED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    ├── Scan(inventory)
+     │    │    │    │    └── Scan(date_dim)
+     │    │    │    └── Scan(warehouse)
+     │    │    └── InnerJoin[PARTITIONED] :
+     │    │         ├── InnerJoin[REPLICATED] :
+     │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │         │    │    ├── InnerJoin[REPLICATED] :
+     │    │         │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │         │    │    │    │    ├── Scan(catalog_sales)
+     │    │         │    │    │    │    └── Scan(household_demographics)
+     │    │         │    │    │    └── Scan(customer_demographics)
+     │    │         │    │    └── Scan(date_dim)
+     │    │         │    └── Scan(date_dim)
+     │    │         └── Scan(item)
+     │    └── Scan(promotion)
+     └── Scan(catalog_returns)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_73.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_73.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_73.txt	2024-08-09 09:56:39.807502875 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_73.txt	2024-08-09 09:56:39.903502721 +0530
+@@ -1,9 +1,9 @@
+-InnerJoin[REPLICATED] :
++InnerJoin[PARTITIONED] :
+     ├── Scan(customer)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+          │    │    └── Scan(date_dim)
+          │    └── Scan(store)
+          └── Scan(household_demographics)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_74.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_74.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_74.txt	2024-08-09 09:56:39.771502934 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_74.txt	2024-08-09 09:56:39.871502772 +0530
+@@ -1,23 +1,23 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+-    │    ├── InnerJoin[PARTITIONED] :
++    │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(store_sales)
+     │    │    │    └── Scan(date_dim)
+     │    │    └── Scan(customer)
+     │    └── InnerJoin[PARTITIONED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(web_sales)
+     │         │    └── Scan(date_dim)
+     │         └── Scan(customer)
+     └── InnerJoin[PARTITIONED] :
+-         ├── InnerJoin[PARTITIONED] :
++         ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+          │    │    └── Scan(date_dim)
+          │    └── Scan(customer)
+          └── InnerJoin[PARTITIONED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── Scan(web_sales)
+               │    └── Scan(date_dim)
+               └── Scan(customer)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_76.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_76.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_76.txt	2024-08-09 09:56:39.779502920 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_76.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,17 +1,16 @@
+ Union :
+-    ├── Union :
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(store_sales)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(item)
+-    │    └── InnerJoin[PARTITIONED] :
+-    │         ├── InnerJoin[PARTITIONED] :
+-    │         │    ├── Scan(item)
+-    │         │    └── Scan(web_sales)
+-    │         └── Scan(date_dim)
++    │    │    ├── Scan(store_sales)
++    │    │    └── Scan(date_dim)
++    │    └── Scan(item)
++    ├── InnerJoin[PARTITIONED] :
++    │    ├── InnerJoin[PARTITIONED] :
++    │    │    ├── Scan(item)
++    │    │    └── Scan(web_sales)
++    │    └── Scan(date_dim)
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── Scan(catalog_sales)
+          │    └── Scan(date_dim)
+          └── Scan(item)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_79.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_79.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_79.txt	2024-08-09 09:56:39.807502875 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_79.txt	2024-08-09 09:56:39.903502721 +0530
+@@ -1,9 +1,9 @@
+-InnerJoin[PARTITIONED] :
++InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    ├── Scan(store_sales)
+     │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(household_demographics)
++    │    │    └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    └── Scan(store)
+     └── Scan(customer)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_81.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_81.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_81.txt	2024-08-09 09:56:39.775502927 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_81.txt	2024-08-09 09:56:39.875502765 +0530
+@@ -1,15 +1,17 @@
+-InnerJoin[REPLICATED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── InnerJoin[PARTITIONED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(catalog_returns)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(customer_address)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(customer)
++CrossJoin[REPLICATED] :
++    ├── LeftJoin[REPLICATED] :
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    ├── Scan(catalog_returns)
++    │    │    │    │    └── Scan(date_dim)
++    │    │    │    └── Scan(customer_address)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(customer)
++    │    │         └── Scan(customer_address)
++    │    └── InnerJoin[PARTITIONED] :
++    │         ├── InnerJoin[REPLICATED] :
++    │         │    ├── Scan(catalog_returns)
++    │         │    └── Scan(date_dim)
+     │         └── Scan(customer_address)
+-    └── InnerJoin[PARTITIONED] :
+-         ├── InnerJoin[REPLICATED] :
+-         │    ├── Scan(catalog_returns)
+-         │    └── Scan(date_dim)
+-         └── Scan(customer_address)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_83.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_83.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_83.txt	2024-08-09 09:56:39.759502952 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_83.txt	2024-08-09 09:56:39.863502785 +0530
+@@ -1,29 +1,29 @@
+ InnerJoin[PARTITIONED] :
+-    ├── SemiJoin[REPLICATED] :
++    ├── InnerJoin[PARTITIONED] :
+     │    ├── InnerJoin[REPLICATED] :
+-    │    │    ├── InnerJoin[REPLICATED] :
+-    │    │    │    ├── Scan(store_returns)
+-    │    │    │    └── Scan(date_dim)
+-    │    │    └── Scan(item)
+-    │    └── SemiJoin[REPLICATED] :
+-    │         ├── Scan(date_dim)
+-    │         └── Scan(date_dim)
++    │    │    ├── Scan(catalog_returns)
++    │    │    └── InnerJoin[REPLICATED] :
++    │    │         ├── Scan(date_dim)
++    │    │         └── InnerJoin[REPLICATED] :
++    │    │              ├── Scan(date_dim)
++    │    │              └── Scan(date_dim)
++    │    └── Scan(item)
+     └── InnerJoin[PARTITIONED] :
+-         ├── SemiJoin[REPLICATED] :
++         ├── InnerJoin[PARTITIONED] :
+          │    ├── InnerJoin[REPLICATED] :
+-         │    │    ├── InnerJoin[REPLICATED] :
+-         │    │    │    ├── Scan(catalog_returns)
+-         │    │    │    └── Scan(date_dim)
+-         │    │    └── Scan(item)
+-         │    └── SemiJoin[REPLICATED] :
+-         │         ├── Scan(date_dim)
+-         │         └── Scan(date_dim)
+-         └── SemiJoin[REPLICATED] :
+-              ├── InnerJoin[REPLICATED] :
+-              │    ├── InnerJoin[REPLICATED] :
+-              │    │    ├── Scan(web_returns)
+-              │    │    └── Scan(date_dim)
+-              │    └── Scan(item)
+-              └── SemiJoin[REPLICATED] :
+-                   ├── Scan(date_dim)
+-                   └── Scan(date_dim)
++         │    │    ├── Scan(store_returns)
++         │    │    └── InnerJoin[REPLICATED] :
++         │    │         ├── Scan(date_dim)
++         │    │         └── InnerJoin[REPLICATED] :
++         │    │              ├── Scan(date_dim)
++         │    │              └── Scan(date_dim)
++         │    └── Scan(item)
++         └── InnerJoin[PARTITIONED] :
++              ├── Scan(item)
++              └── InnerJoin[REPLICATED] :
++                   ├── Scan(web_returns)
++                   └── InnerJoin[REPLICATED] :
++                        ├── Scan(date_dim)
++                        └── InnerJoin[REPLICATED] :
++                             ├── Scan(date_dim)
++                             └── Scan(date_dim)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_85.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_85.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_85.txt	2024-08-09 09:56:39.807502875 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_85.txt	2024-08-09 09:56:39.903502721 +0530
+@@ -1,15 +1,15 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[PARTITIONED] :
+-    │    ├── Scan(customer_demographics)
+-    │    └── InnerJoin[PARTITIONED] :
+-    │         ├── Scan(customer_address)
+-    │         └── InnerJoin[PARTITIONED] :
+-    │              ├── InnerJoin[REPLICATED] :
+-    │              │    ├── Scan(web_returns)
+-    │              │    └── InnerJoin[REPLICATED] :
+-    │              │         ├── InnerJoin[REPLICATED] :
+-    │              │         │    ├── Scan(web_sales)
+-    │              │         │    └── Scan(date_dim)
+-    │              │         └── Scan(web_page)
+-    │              └── Scan(customer_demographics)
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    │    ├── InnerJoin[PARTITIONED] :
++    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
++    │    │    │    │    │    │    ├── Scan(web_sales)
++    │    │    │    │    │    │    └── Scan(date_dim)
++    │    │    │    │    │    └── Scan(web_returns)
++    │    │    │    │    └── Scan(customer_demographics)
++    │    │    │    └── Scan(customer_demographics)
++    │    │    └── Scan(web_page)
++    │    └── Scan(customer_address)
+     └── Scan(reason)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_88.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_88.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_88.txt	2024-08-09 09:56:39.823502849 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_88.txt	2024-08-09 09:56:39.919502694 +0530
+@@ -1,63 +1,63 @@
+ CrossJoin[REPLICATED] :
+     ├── CrossJoin[REPLICATED] :
+     │    ├── CrossJoin[REPLICATED] :
+     │    │    ├── CrossJoin[REPLICATED] :
+     │    │    │    ├── CrossJoin[REPLICATED] :
+     │    │    │    │    ├── CrossJoin[REPLICATED] :
+     │    │    │    │    │    ├── CrossJoin[REPLICATED] :
+     │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │    │    │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │    │    │    │    ├── Scan(store_sales)
+     │    │    │    │    │    │    │    │    │    └── Scan(time_dim)
+     │    │    │    │    │    │    │    │    └── Scan(store)
+-    │    │    │    │    │    │    │    └── Scan(household_demographics)
++    │    │    │    │    │    │    │    └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    │    │    │    │    │    └── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │         ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │    │         │    │    ├── Scan(store_sales)
+     │    │    │    │    │    │         │    │    └── Scan(time_dim)
+     │    │    │    │    │    │         │    └── Scan(store)
+-    │    │    │    │    │    │         └── Scan(household_demographics)
++    │    │    │    │    │    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    │    │    │    │    └── InnerJoin[REPLICATED] :
+     │    │    │    │    │         ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │    │         │    │    ├── Scan(store_sales)
+     │    │    │    │    │         │    │    └── Scan(time_dim)
+     │    │    │    │    │         │    └── Scan(store)
+-    │    │    │    │    │         └── Scan(household_demographics)
++    │    │    │    │    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    │    │    │    └── InnerJoin[REPLICATED] :
+     │    │    │    │         ├── InnerJoin[REPLICATED] :
+     │    │    │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │    │    │         │    │    ├── Scan(store_sales)
+     │    │    │    │         │    │    └── Scan(time_dim)
+     │    │    │    │         │    └── Scan(store)
+-    │    │    │    │         └── Scan(household_demographics)
++    │    │    │    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    │    │    └── InnerJoin[REPLICATED] :
+     │    │    │         ├── InnerJoin[REPLICATED] :
+     │    │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │    │         │    │    ├── Scan(store_sales)
+     │    │    │         │    │    └── Scan(time_dim)
+     │    │    │         │    └── Scan(store)
+-    │    │    │         └── Scan(household_demographics)
++    │    │    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    │    └── InnerJoin[REPLICATED] :
+     │    │         ├── InnerJoin[REPLICATED] :
+     │    │         │    ├── InnerJoin[REPLICATED] :
+     │    │         │    │    ├── Scan(store_sales)
+     │    │         │    │    └── Scan(time_dim)
+     │    │         │    └── Scan(store)
+-    │    │         └── Scan(household_demographics)
++    │    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── InnerJoin[REPLICATED] :
+     │         │    │    ├── Scan(store_sales)
+     │         │    │    └── Scan(time_dim)
+     │         │    └── Scan(store)
+-    │         └── Scan(household_demographics)
++    │         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+     └── InnerJoin[REPLICATED] :
+          ├── InnerJoin[REPLICATED] :
+          │    ├── InnerJoin[REPLICATED] :
+          │    │    ├── Scan(store_sales)
+          │    │    └── Scan(time_dim)
+          │    └── Scan(store)
+-         └── Scan(household_demographics)
++         └── Scan(household_demographics constraint on [hd_vehicle_count, hd_dep_count])
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_89.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_89.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_89.txt	2024-08-09 09:56:39.795502895 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_89.txt	2024-08-09 09:56:39.891502740 +0530
+@@ -1,7 +1,7 @@
+ InnerJoin[REPLICATED] :
+     ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(store_sales)
+-    │    │    └── Scan(item)
++    │    │    └── Scan(item constraint on [i_class, i_category])
+     │    └── Scan(date_dim)
+     └── Scan(store)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_91.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_91.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_91.txt	2024-08-09 09:56:39.751502966 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_91.txt	2024-08-09 09:56:39.855502797 +0530
+@@ -1,13 +1,13 @@
+ InnerJoin[REPLICATED] :
+-    ├── InnerJoin[PARTITIONED] :
++    ├── InnerJoin[REPLICATED] :
+     │    ├── InnerJoin[REPLICATED] :
+     │    │    ├── Scan(catalog_returns)
+-    │    │    └── Scan(date_dim)
+-    │    └── InnerJoin[PARTITIONED] :
+-    │         ├── InnerJoin[REPLICATED] :
+-    │         │    ├── InnerJoin[REPLICATED] :
+-    │         │    │    ├── Scan(customer)
+-    │         │    │    └── Scan(customer_demographics)
+-    │         │    └── Scan(household_demographics)
+-    │         └── Scan(customer_address)
++    │    │    └── InnerJoin[PARTITIONED] :
++    │    │         ├── Scan(customer_address)
++    │    │         └── InnerJoin[REPLICATED] :
++    │    │              ├── InnerJoin[REPLICATED] :
++    │    │              │    ├── Scan(customer)
++    │    │              │    └── Scan(customer_demographics constraint on [cd_marital_status, cd_education_status])
++    │    │              └── Scan(household_demographics constraint on [hd_buy_potential])
++    │    └── Scan(date_dim)
+     └── Scan(call_center)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_92.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_92.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_92.txt	2024-08-09 09:56:39.779502920 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_92.txt	2024-08-09 09:56:39.879502760 +0530
+@@ -1,9 +1,11 @@
+-InnerJoin[REPLICATED] :
+-    ├── InnerJoin[REPLICATED] :
+-    │    ├── Scan(web_sales)
+-    │    └── InnerJoin[PARTITIONED] :
++CrossJoin[REPLICATED] :
++    ├── RightJoin[PARTITIONED] :
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── Scan(web_sales)
++    │    │    └── Scan(date_dim)
++    │    └── InnerJoin[REPLICATED] :
+     │         ├── InnerJoin[REPLICATED] :
+     │         │    ├── Scan(web_sales)
+-    │         │    └── Scan(date_dim)
+-    │         └── Scan(item)
+-    └── Scan(date_dim)
++    │         │    └── Scan(item)
++    │         └── Scan(date_dim)
++    └── Values
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_93.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_93.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_93.txt	2024-08-09 09:56:39.731502998 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_93.txt	2024-08-09 09:56:39.839502824 +0530
+@@ -1,5 +1,5 @@
+ InnerJoin[REPLICATED] :
+-    ├── Scan(store_sales)
+-    └── InnerJoin[REPLICATED] :
+-         ├── Scan(store_returns)
+-         └── Scan(reason)
++    ├── InnerJoin[PARTITIONED] :
++    │    ├── Scan(store_sales)
++    │    └── Scan(store_returns)
++    └── Scan(reason)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_94.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_94.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_94.txt	2024-08-09 09:56:39.807502875 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_94.txt	2024-08-09 09:56:39.903502721 +0530
+@@ -1,11 +1,11 @@
+ RightJoin[PARTITIONED] :
+     ├── Scan(web_returns)
+-    └── RightJoin[PARTITIONED] :
++    └── InnerJoin[REPLICATED] :
+          ├── Scan(web_sales)
+          └── InnerJoin[REPLICATED] :
+               ├── InnerJoin[REPLICATED] :
+               │    ├── InnerJoin[REPLICATED] :
+               │    │    ├── Scan(web_sales)
+               │    │    └── Scan(customer_address)
+               │    └── Scan(date_dim)
+               └── Scan(web_site)
+diff -U 1000000 /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_95.txt /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_95.txt
+--- /tmp/diff15624126750623555888/prestissimo_sf_1k-1115190663/ds_power_query_95.txt	2024-08-09 09:56:39.747502972 +0530
++++ /tmp/diff15624126750623555888/trino_sf_1k-1556758557/ds_power_query_95.txt	2024-08-09 09:56:39.851502804 +0530
+@@ -1,17 +1,17 @@
+ InnerJoin[PARTITIONED] :
+     ├── InnerJoin[PARTITIONED] :
+-    │    ├── Scan(web_sales)
+-    │    └── InnerJoin[REPLICATED] :
+-    │         ├── Scan(web_sales)
+-    │         └── InnerJoin[REPLICATED] :
+-    │              ├── Scan(web_sales)
+-    │              └── InnerJoin[REPLICATED] :
+-    │                   ├── InnerJoin[REPLICATED] :
+-    │                   │    ├── InnerJoin[REPLICATED] :
+-    │                   │    │    ├── Scan(web_sales)
+-    │                   │    │    └── Scan(customer_address)
+-    │                   │    └── Scan(date_dim)
+-    │                   └── Scan(web_site)
+-    └── InnerJoin[REPLICATED] :
+-         ├── Scan(web_sales)
+-         └── Scan(web_returns)
++    │    ├── InnerJoin[REPLICATED] :
++    │    │    ├── Scan(web_sales)
++    │    │    └── Scan(web_returns)
++    │    └── Scan(web_sales)
++    └── InnerJoin[PARTITIONED] :
++         ├── InnerJoin[PARTITIONED] :
++         │    ├── Scan(web_sales)
++         │    └── Scan(web_sales)
++         └── InnerJoin[REPLICATED] :
++              ├── InnerJoin[REPLICATED] :
++              │    ├── InnerJoin[REPLICATED] :
++              │    │    ├── Scan(web_sales)
++              │    │    └── Scan(customer_address)
++              │    └── Scan(date_dim)
++              └── Scan(web_site)
+`;
+
+document.addEventListener('DOMContentLoaded', function () {
+var targetElement = document.getElementById('myDiffElement');
+var configuration = {
+drawFileList: true,
+fileListToggle: false,
+fileListStartVisible: false,
+fileContentToggle: false,
+matching: 'lines',
+outputFormat: 'side-by-side',
+synchronisedScroll: true,
+highlight: true,
+renderNothingWhenEmpty: false,
+};
+var diff2htmlUi = new Diff2HtmlUI(targetElement, diffString, configuration);
+diff2htmlUi.draw();
+diff2htmlUi.highlightCode();
+});
+</script>
+<body>
+<div id="myDiffElement"></div>
+</body>
+</html>
